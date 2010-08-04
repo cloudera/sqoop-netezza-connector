@@ -1,0 +1,9 @@
+/build
+/.classpath
+/.project
+/.launches
+/.settings
+/tags
+/build.properties
+*~
+
