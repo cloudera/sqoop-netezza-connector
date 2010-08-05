@@ -56,9 +56,9 @@
   <dependencies>
     <!-- Dependencies for Cloudera's Distribution for Hadoop -->
     <dependency org="com.cloudera.hadoop" name="hadoop-core"
-      rev="${hadoop-core.cloudera.version}" conf="cloudera->default"/>
+      rev="${hadoop-core.cloudera.version}" conf="common->default"/>
     <dependency org="com.cloudera.hadoop" name="hadoop-test"
-      rev="${hadoop-core.cloudera.version}" conf="clouderatest->default"/>
+      rev="${hadoop-core.cloudera.version}" conf="test->default"/>
 
     <!-- Common dependencies for Sqoop -->
     <dependency org="commons-cli" name="commons-cli"
@@ -76,8 +76,10 @@
 
     <!-- dependencies on Sqoop and its Cloudera-Hadoop shim. -->
     <dependency org="com.cloudera.sqoop" name="sqoop"
-      rev="${version}" conf="common->default" />
+      rev="${sqoop.version}" conf="common->default" />
     <dependency org="com.cloudera.sqoop" name="sqoop-shim-cloudera"
-      rev="${version}" conf="common->default" />
+      rev="${sqoop.version}" conf="common->default" />
+    <dependency org="com.cloudera.sqoop" name="sqoop-test"
+      rev="${sqoop.version}" conf="test->default" />
   </dependencies>
 </ivy-module>

@@ -526,7 +526,7 @@
   </target>
 
   <target name="clean-cache" description="Remove cached dependencies">
-    <delete dir="${user.home}/.ivy2/cache/org.apache.hadoop" />
+    <delete dir="${user.home}/.ivy2/cache/com.cloudera.sqoop" />
     <delete file="${ivy.jar}" />
   </target>
 
@@ -700,7 +700,7 @@
   </target>
 
   <target name="eclipse" description="Generate Eclipse project"
-      depends="init,ivy-retrieve-hadoop,ivy-retrieve-hadoop-test">
+      depends="init,ivy-retrieve-common,ivy-retrieve-test">
     <taskdef name="eclipse" classname="prantl.ant.eclipse.EclipseTask"
         classpath="${lib.dir}/ant-eclipse-1.0-jvm1.2.jar" />
     <eclipse failonerror="true" updatealways="true">
