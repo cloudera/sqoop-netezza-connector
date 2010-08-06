@@ -1,0 +1,42 @@
+
+
+Testing for Netezza is performed against a Netezza simulator VM.
+The simulator can be downloaded from http://developer.netezza.com/
+and initialized by following the instructions there. This should be
+run on an external machine with 4+ cores and 8+ GB of RAM to spare.
+
+On the development machine where tests will be run, /etc/hosts should
+contain a line specifying the NZHOST's IP address as hostname 'nzhost'.
+
+e.g.:
+aaron@paperweight:~$ cat /etc/hosts
+127.0.0.127 paperweight localhost
+127.0.1.127 paperweight
+192.168.42.238 nzhost
+
+
+
+When the netezza system is running, create a user named SQOOPTEST
+and a database named SQOOPTESTDB like so:
+
+$ nzsql -u admin -p password -d system -h nzhost
+
+# Create test database.
+=> CREATE DATABASE SQOOPTESTDB;
+
+# Create a Sqoop user.
+=> CREATE USER sqooptest WITH PASSWORD 'sqooptest';
+=> \q
+
+
+#  Log back in to the sqooptestdb database, as the admin.
+$ nzsql -u admin -p password -d sqooptestdb -h nzhost
+
+# Grant all privs on the sqooptestdb to sqooptest.
+=> GRANT ALL ON sqooptestdb TO sqooptest;
+
+# Grant ability to create/delete tables to sqooptest.
+=> GRANT TABLE TO SQOOPTEST;
+=> \q
+
+

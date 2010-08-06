@@ -28,11 +28,12 @@ import org.apache.commons.logging.LogFactory;
  * Contains instantiation code for all ConnManager implementations
  * shipped and enabled in the third-party connector library.
  */
-public final class EnterpriseManagerFactory extends ManagerFactory {
+public class EnterpriseManagerFactory extends ManagerFactory {
 
   public static final Log LOG = LogFactory.getLog(
       EnterpriseManagerFactory.class.getName());
 
+  @Override
   public ConnManager accept(SqoopOptions options) {
 
     String connectStr = options.getConnectString();

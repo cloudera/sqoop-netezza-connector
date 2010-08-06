@@ -18,6 +18,8 @@
 
 package com.cloudera.sqoop.netezza;
 
+import java.sql.Connection;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,4 +40,11 @@ public class NetezzaManager extends GenericJdbcManager {
   public NetezzaManager(final SqoopOptions opts) {
     super(DRIVER_CLASS, opts);
   }
+
+  @Override
+  protected int getMetadataIsolationLevel() {
+    // Netezza doesn't support READ_UNCOMMITTED.
+    return Connection.TRANSACTION_READ_COMMITTED;
+  }
 }
+
