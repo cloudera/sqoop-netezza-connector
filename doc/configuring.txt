@@ -1,0 +1,22 @@
+
+
+To configure sqoop to use the sqoop-connectors library:
+
+1) Register the new ConnectionManager with Sqoop in its configuration.
+
+Edit /etc/sqoop/conf/sqoop-site.xml to contain the property:
+
+  <property>
+    <name>sqoop.connection.factories</name>
+    <value>com.cloudera.sqoop.manager.EnterpriseManagerFactory,com.cloudera.sqoop.manager.DefaultManagerFactory</value>
+  </property>
+
+
+2) Place the sqoop-connectors-(version).jar file and any additional JDBC
+drivers (e.g., nzjdbc3.jar for Netezza) in /usr/lib/sqoop/lib/.
+
+3) The normal Sqoop interface should now work with your EDW. Try:
+
+  $ sqoop import --connect jdbc:netezza://nzhost/nzdb --username ...
+
+
