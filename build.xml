@@ -103,6 +103,9 @@
     -->
   <property name="sqoop.thirdparty.lib.dir" value="" />
 
+  <!-- Location of the nzsession executable. -->
+  <property name="nz.session.path" value="/usr/local/nz/bin/nzsession" />
+
   <!-- Ivy-based dependency resolution -->
   <property name="ivy.dir" location="${basedir}/ivy" />
   <property name="ivysettings.xml" location="${ivy.dir}/ivysettings.xml"/>
@@ -347,6 +350,12 @@
            exiting with status 1.
         -->
       <sysproperty key="sqoop.throwOnError" value="" />
+
+      <!-- property used to define the path to the 'nzsession' executable.
+           Users should set this in build.properties if this is not in the
+           default location.
+        -->
+      <sysproperty key="nz.session.path" value="${nz.session.path}" />
 
       <!-- we want more log4j output when running unit tests -->
       <sysproperty key="hadoop.root.logger"
