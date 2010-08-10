@@ -62,9 +62,6 @@ public class NetezzaExportMapper<KEYIN, VALIN>
   /** The FIFO being used to communicate with netezza. */
   private File fifoFile;
 
-  /** The JDBC connection to Netezza. */
-  private Connection conn;
-
   /** The OutputStream we are using to write the fifo data. */
   private OutputStream exportStream;
   
@@ -73,6 +70,83 @@ public class NetezzaExportMapper<KEYIN, VALIN>
 
   /** Delimiters to use for Netezza */
   private DelimiterSet outputDelimiters;
+
+  private class JdbcThread extends Thread {
+    private SQLException sqlException;
+    private Connection conn;
+
+    public JdbcThread() {
+      this.conn = null;
+    }
+
+    public SQLException getException() {
+      return sqlException;
+    }
+
+
+    /**
+     * Create the connection instance.
+     */
+    public void initConnection() throws SQLException {
+      // Use JDBC to connect to the database.
+      DBConfiguration dbConf = new DBConfiguration(conf);
+      try {
+        conn = dbConf.getConnection();
+      } catch (ClassNotFoundException cnfe) {
+        throw new SQLException(cnfe);
+      }
+      if (null == conn) {
+        throw new SQLException("Could not connect to database");
+      }
+    }
+
+    public void run() {
+      PreparedStatement ps = null;
+
+      try {
+        DBConfiguration dbConf = new DBConfiguration(conf);
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ");
+        sb.append(dbConf.getInputTableName());
+        sb.append(" SELECT * FROM EXTERNAL '");
+        sb.append(NetezzaExportMapper.this.fifoFile.getAbsolutePath());
+        sb.append("' USING (REMOTESOURCE 'JDBC' ");
+        sb.append("BOOLSTYLE 'TRUE_FALSE' ");
+        sb.append("CRINSTRING FALSE ");
+        sb.append("DELIMITER ',' ");
+        sb.append("ENCODING 'internal' ");
+        sb.append("ESCAPECHAR '\\' ");
+        sb.append("FORMAT 'text' ");
+        sb.append("INCLUDEZEROSECONDS TRUE ");
+        sb.append("NULLVALUE 'null' ");
+        sb.append(")");
+
+        try {
+          ps = conn.prepareStatement(sb.toString());
+          ps.executeUpdate();
+        } finally {
+          if (null != ps) {
+            ps.close();
+          }
+        }
+      } catch (SQLException sqlE) {
+        // Save this exception for the parent thread to use to fail the task.
+        this.sqlException = sqlE;
+      } finally {
+        if (null != conn) {
+          try {
+            conn.close();
+          } catch (SQLException sqlE) {
+            // Exception closing the connection does not fail the task.
+            LOG.error("Exception closing connection: " + sqlE);
+          }
+        }
+      }
+    }
+  }
+
+  /** Thread which executes the SQL query to import over the FIFO. */
+  private JdbcThread jdbcThread;
 
   /**
    * Create a named FIFO, and bind the JDBC connection to the FIFO.
@@ -86,51 +160,19 @@ public class NetezzaExportMapper<KEYIN, VALIN>
     NamedFifo nf = new NamedFifo(this.fifoFile);
     nf.create();
 
-    this.exportStream = new FileOutputStream(nf.getFile());
-
-    // Use JDBC to connect to the database.
-    DBConfiguration dbConf = new DBConfiguration(conf);
+    // Start the JDBC thread which connects to the database
+    // and opens the read side of the FIFO.
+    this.jdbcThread = new JdbcThread();
     try {
-      this.conn = dbConf.getConnection();
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
-    if (null == conn) {
-      throw new IOException("Could not connect to database");
-    }
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("INSERT INTO ");
-    sb.append(dbConf.getInputTableName());
-    sb.append(" SELECT * FROM EXTERNAL '");
-    sb.append(this.fifoFile.getAbsolutePath());
-    sb.append("' USING (REMOTESOURCE 'JDBC' ");
-    sb.append("BOOLSTYLE 'TRUE_FALSE' ");
-    sb.append("CRINSTRING FALSE ");
-    sb.append("DELIMITER ',' ");
-    sb.append("ENCODING 'internal' ");
-    sb.append("ESCAPECHAR '\\' ");
-    sb.append("FORMAT 'text' ");
-    sb.append("INCLUDEZEROSECONDS TRUE ");
-    sb.append("NULLVALUE 'null' ");
-    sb.append(")");
-
-    PreparedStatement ps = null;
-    try {
-      ps = conn.prepareStatement(sb.toString());
-      ps.executeUpdate();
+      this.jdbcThread.initConnection();
     } catch (SQLException sqlE) {
       throw new IOException(sqlE);
-    } finally {
-      if (null != ps) {
-        try {
-          ps.close();
-        } catch (SQLException sqlE) {
-          LOG.warn("Error closing statement: " + sqlE);
-        }
-      }
-      ps = null;
     }
+    this.jdbcThread.start();
+
+    // Open the write side of the FIFO.
+    this.exportStream = new FileOutputStream(nf.getFile());
+
   }
 
   @Override
@@ -152,7 +194,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
     }
   }
 
-  private void closeHandles() throws SQLException {
+  private void closeHandles() throws InterruptedException, SQLException {
     // Try to close the FIFO handle. An exception here does not cause task
     // failure.
     if (null != this.exportStream) {
@@ -165,21 +207,13 @@ public class NetezzaExportMapper<KEYIN, VALIN>
       }
     }
 
-    // Attempt to commit the transaction. If this throws an exception, we
-    // propagate it up. In either case, close the connection. An exception
-    // closing the connection does not fail the task.
-    if (null != this.conn) {
-      try {
-        this.conn.commit();
-      } finally {
-        try {
-          this.conn.close();
-        } catch (SQLException sqlE) {
-          LOG.error("Exception closing connection: " + sqlE);
-        } finally {
-          this.conn = null;
-        }
-      }
+    // Wait for the JDBC thread to complete processing
+    // and stop.
+    this.jdbcThread.join();
+
+    SQLException sqlE = this.jdbcThread.getException();
+    if (null != sqlE) {
+      throw new SQLException(sqlE);
     }
   }
 
@@ -202,7 +236,6 @@ public class NetezzaExportMapper<KEYIN, VALIN>
    * @param record A delimited text representation of one record.
    */
   protected void writeRecord(Text record) throws IOException {
-
     try {
       inputRecord.parse(record);
     } catch (RecordParser.ParseError e) {
