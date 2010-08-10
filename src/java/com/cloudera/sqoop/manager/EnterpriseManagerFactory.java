@@ -19,6 +19,7 @@
 package com.cloudera.sqoop.manager;
 
 import com.cloudera.sqoop.SqoopOptions;
+import com.cloudera.sqoop.netezza.DirectNetezzaManager;
 import com.cloudera.sqoop.netezza.NetezzaManager;
 
 import org.apache.commons.logging.Log;
@@ -73,7 +74,11 @@ public class EnterpriseManagerFactory extends ManagerFactory {
     LOG.debug("Trying with scheme: " + scheme);
 
     if (scheme.equals("jdbc:netezza:")) {
-      return new NetezzaManager(options);
+      if (options.isDirect()) {
+        return new DirectNetezzaManager(options);
+      } else {
+        return new NetezzaManager(options);
+      }
     } else {
       return null;
     }
