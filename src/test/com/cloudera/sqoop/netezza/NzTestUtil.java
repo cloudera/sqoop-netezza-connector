@@ -35,20 +35,20 @@ import org.apache.commons.logging.LogFactory;
 
 import org.apache.hadoop.conf.Configuration;
 
+import com.cloudera.sqoop.ConnFactory;
 import com.cloudera.sqoop.SqoopOptions;
 
+import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.EnterpriseManagerFactory;
-import com.cloudera.sqoop.testutil.ManagerCompatTestCase;
 
 import com.cloudera.sqoop.util.AsyncSink;
 
 /**
- * Test the Netezza EDW connector against the standard Sqoop compatibility
- * test.
+ * Utilities for testing Netezza.
  */
-public class TestNetezza extends ManagerCompatTestCase {
+public class NzTestUtil {
 
-  private Log log = LogFactory.getLog(TestNetezza.class.getName());
+  private static Log LOG = LogFactory.getLog(NzTestUtil.class.getName());
 
   /** Hostname in /etc/hosts for the Netezza test database. */
   public static final String NETEZZA_HOST = "nzhost";
@@ -74,169 +74,9 @@ public class TestNetezza extends ManagerCompatTestCase {
   public static final String DEFAULT_NZ_SESSION_PATH =
       "/usr/local/nz/bin/nzsession";
 
-  @Override
-  protected Log getLogger() {
-    return log;
-  }
-
-  @Override
-  protected String getDbFriendlyName() {
-    return "netezza";
-  }
-
-  @Override
-  public String getConnectString() {
-    return "jdbc:netezza://" + NETEZZA_HOST + "/" + NETEZZA_DB;
-  }
-
-  @Override
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Set the netezza user/pass to use.</p>
-   */
-  public SqoopOptions getSqoopOptions(Configuration conf) {
-    SqoopOptions options = super.getSqoopOptions(conf);
-    options.setUsername(NETEZZA_USER);
-    options.setPassword(NETEZZA_PASS);
-
-    return options;
-  }
-
-  @Override
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Configure the ManagerFactory to use.</p> 
-   */
-  public Configuration getConf() {
-    Configuration conf = super.getConf();
-    conf.set("sqoop.connection.factories",
-        EnterpriseManagerFactory.class.getName());
-    return conf;
-  }
-
-  @Override
-  public void dropTableIfExists(String tableName) throws SQLException {
-    Connection conn = getManager().getConnection();
-    PreparedStatement s = null;
-    try {
-      s = conn.prepareStatement("DROP TABLE " + tableName);
-      s.executeUpdate();
-      conn.commit();
-    } catch (SQLException sqlE) {
-      // DROP TABLE may not succeed; the table might not exist. Just continue.
-      LOG.warn("Ignoring SQL Exception dropping table " + tableName
-          + " : " + sqlE);
-
-      // Clear current query state.
-      conn.rollback();
-    } finally {
-      if (null != s) {
-        s.close();
-      }
-    }
-  }
-
-  @Override
-  protected boolean supportsClob() {
-    return false;
-  }
-
-  @Override
-  protected boolean supportsBlob() {
-    return false;
-  }
-
-  @Override
-  protected boolean supportsVarBinary() {
-    return false;
-  }
-
-  @Override
-  protected boolean supportsLongVarChar() {
-    return false;
-  }
-
-  @Override
-  protected boolean supportsBoolean() {
-    // Boolean split columns are not supported by NZ; it does not understand
-    // the MIN() function over a boolean column.
-    return false;
-  }
-
-  @Override
-  protected String getTinyIntType() {
-    return "BYTEINT";
-  }
-
-  // CHAR() types are space-padded in Netezza.
-
-  @Override
-  protected String getFixedCharDbOut(int fieldWidth, String asInserted) {
-    return padString(fieldWidth, asInserted);
-  }
-
-  @Override
-  protected String getFixedCharSeqOut(int fieldWidth, String asInserted) {
-    return padString(fieldWidth, asInserted);
-  }
-
-  @Override
-  protected String getTimestampDbOutput(String tsAsInserted) {
-    // Default getTimestampDbOutput() adds a lot of zero-padding;
-    // SeqOutput() does not. We need the SeqOutput behavior here.
-    return getTimestampSeqOutput(tsAsInserted);
-  }
-
-  /**
-   * Return the input decimalStr padded to 'precision'
-   * elements to the right of the dot.
-   *
-   * Example inputs: "10", "10.", "10.4", "10.031"
-   */
-  private String zeroPad(String decimalStr, int precision) {
-    if (null == decimalStr || "null".equals(decimalStr)) {
-      return decimalStr;
-    }
-   
-    StringBuilder sb = new StringBuilder();
-    sb.append(decimalStr);
-
-    int dotPos = decimalStr.indexOf(".");
-    int remaining;
-    if (-1 == dotPos) {
-      sb.append(".");
-      remaining = precision;
-    } else {
-      remaining = precision - (decimalStr.length() - dotPos - 1);
-    }
-
-    for (int i = 0; i < remaining; i++) {
-      sb.append("0");
-    }
-
-    return sb.toString();
-  }
-
-  @Override
-  protected String getNumericDbOutput(String asInserted) {
-    return zeroPad(asInserted, 5);
-  }
-
-  @Override
-  protected String getDecimalDbOutput(String asInserted) {
-    return zeroPad(asInserted, 5);
-  }
-
-  @Override
-  public void tearDown() {
-    super.tearDown();
-    try {
-      clearNzSessions();
-    } catch (Exception e) {
-      LOG.warn("Could not clear nzsessions: " + e);
-    }
+  public static String getConnectString() {
+    return "jdbc:netezza://" + NzTestUtil.NETEZZA_HOST + "/"
+        + NzTestUtil.NETEZZA_DB;
   }
 
   /**
@@ -246,7 +86,7 @@ public class TestNetezza extends ManagerCompatTestCase {
    * 32 connections open like this, subsequent tests will deadlock.
    * This method terminates the sessions forcefully.
    */
-  private void clearNzSessions() throws IOException, InterruptedException {
+  public void clearNzSessions() throws IOException, InterruptedException {
     String pathToNzSession = System.getProperty(
         NZ_SESSION_PATH_KEY, DEFAULT_NZ_SESSION_PATH);
 
@@ -383,6 +223,48 @@ public class TestNetezza extends ManagerCompatTestCase {
           LOG.warn("Error closing stream in LineBufferingAsyncSink: "
               + ioe.toString());
         }
+      }
+    }
+  }
+
+  public static Configuration initConf(Configuration conf) {
+    conf.set("sqoop.connection.factories",
+        EnterpriseManagerFactory.class.getName());
+    return conf;
+  }
+
+  public static SqoopOptions initSqoopOptions(SqoopOptions options) {
+    options.setConnectString(NzTestUtil.getConnectString());
+    options.setUsername(NzTestUtil.NETEZZA_USER);
+    options.setPassword(NzTestUtil.NETEZZA_PASS);
+
+    return options;
+  }
+
+  public static ConnManager getNzManager(SqoopOptions options)
+      throws IOException {
+    initSqoopOptions(options);
+    ConnFactory cf = new ConnFactory(options.getConf());
+    return cf.getManager(options);
+  }
+
+  public static void dropTableIfExists(Connection conn, String tableName)
+      throws SQLException {
+    PreparedStatement s = null;
+    try {
+      s = conn.prepareStatement("DROP TABLE " + tableName);
+      s.executeUpdate();
+      conn.commit();
+    } catch (SQLException sqlE) {
+      // DROP TABLE may not succeed; the table might not exist. Just continue.
+      LOG.warn("Ignoring SQL Exception dropping table " + tableName
+          + " : " + sqlE);
+
+      // Clear current query state.
+      conn.rollback();
+    } finally {
+      if (null != s) {
+        s.close();
       }
     }
   }
