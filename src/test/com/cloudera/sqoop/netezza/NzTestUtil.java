@@ -32,7 +32,7 @@ import com.cloudera.sqoop.util.AsyncSink;
  */
 public class NzTestUtil {
 
-  private static Log LOG = LogFactory.getLog(NzTestUtil.class.getName());
+  private static final Log LOG = LogFactory.getLog(NzTestUtil.class.getName());
 
   /** Hostname in /etc/hosts for the Netezza test database. */
   public static final String NETEZZA_HOST = "nzhost";
@@ -148,7 +148,7 @@ public class NzTestUtil {
    */
   public class LineBufferingAsyncSink extends AsyncSink {
 
-    public final Log LOG = LogFactory.getLog(
+    private final Log log = LogFactory.getLog(
         LineBufferingAsyncSink.class.getName());
 
     public LineBufferingAsyncSink() {
@@ -198,13 +198,13 @@ public class NzTestUtil {
             LineBufferingAsyncSink.this.lines.add(line);
           }
         } catch (IOException ioe) {
-          LOG.error("IOException reading from stream: " + ioe.toString());
+          log.error("IOException reading from stream: " + ioe.toString());
         }
 
         try {
           r.close();
         } catch (IOException ioe) {
-          LOG.warn("Error closing stream in LineBufferingAsyncSink: "
+          log.warn("Error closing stream in LineBufferingAsyncSink: "
               + ioe.toString());
         }
       }

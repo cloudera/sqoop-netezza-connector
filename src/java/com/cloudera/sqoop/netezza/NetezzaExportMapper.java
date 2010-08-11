@@ -52,7 +52,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
   /** Object that holds/parses a record of the user's input. */
   private SqoopRecord inputRecord;
 
-  /** Delimiters to use for Netezza */
+  /** Delimiters to use for Netezza. */
   private DelimiterSet outputDelimiters;
 
   private class JdbcThread extends Thread {

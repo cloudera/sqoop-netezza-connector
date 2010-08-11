@@ -283,15 +283,15 @@ public class TestNetezzaJdbcExport extends TestCase {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
 
-    final Date d = new Date(System.currentTimeMillis());
+    final Date DATE = new Date(System.currentTimeMillis());
 
     createTableForType("DATE");
     Path p = new Path(getBasePath(), "date.txt");
-    writeFileWithLine(conf, p, "1," + d);
+    writeFileWithLine(conf, p, "1," + DATE);
     runExport(options, p);
     checkValForId(1, new Checker() {
       public void check(ResultSet rs) throws SQLException {
-        assertEquals(d.toString(), rs.getDate(1).toString());
+        assertEquals(DATE.toString(), rs.getDate(1).toString());
       }
     });
   }
@@ -300,15 +300,15 @@ public class TestNetezzaJdbcExport extends TestCase {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
 
-    final Time d = new Time(System.currentTimeMillis());
+    final Time TIME = new Time(System.currentTimeMillis());
 
     createTableForType("TIME");
     Path p = new Path(getBasePath(), "time.txt");
-    writeFileWithLine(conf, p, "1," + d);
+    writeFileWithLine(conf, p, "1," + TIME);
     runExport(options, p);
     checkValForId(1, new Checker() {
       public void check(ResultSet rs) throws SQLException {
-        assertEquals(d.toString(), rs.getTime(1).toString());
+        assertEquals(TIME.toString(), rs.getTime(1).toString());
       }
     });
   }
@@ -317,15 +317,15 @@ public class TestNetezzaJdbcExport extends TestCase {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
 
-    final Timestamp d = new Timestamp(System.currentTimeMillis());
+    final Timestamp TS = new Timestamp(System.currentTimeMillis());
 
     createTableForType("TIMESTAMP");
     Path p = new Path(getBasePath(), "timestamp.txt");
-    writeFileWithLine(conf, p, "1," + d);
+    writeFileWithLine(conf, p, "1," + TS);
     runExport(options, p);
     checkValForId(1, new Checker() {
       public void check(ResultSet rs) throws SQLException {
-        assertEquals(d, rs.getTimestamp(1));
+        assertEquals(TS, rs.getTimestamp(1));
       }
     });
   }
