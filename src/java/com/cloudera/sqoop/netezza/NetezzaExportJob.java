@@ -58,6 +58,8 @@ public class NetezzaExportJob extends ExportJobBase {
       String tableClassName, String splitByCol)
       throws ClassNotFoundException, IOException {
 
+    LOG.info("Using direct Netezza export");
+
     ConnManager mgr = this.context.getConnManager();
     String username = options.getUsername();
     if (null == username || username.length() == 0) {

@@ -35,7 +35,7 @@ import com.cloudera.sqoop.testutil.ManagerCompatTestCase;
  */
 public class TestNetezzaImportCompat extends ManagerCompatTestCase {
 
-  private Log log = LogFactory.getLog(TestNetezza.class.getName());
+  private Log log = LogFactory.getLog(TestNetezzaImportCompat.class.getName());
 
   @Override
   protected Log getLogger() {
