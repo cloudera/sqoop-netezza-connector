@@ -16,15 +16,14 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.conf.Configuration;
 
 import com.cloudera.sqoop.ConnFactory;
 import com.cloudera.sqoop.SqoopOptions;
-
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.EnterpriseManagerFactory;
-
+import com.cloudera.sqoop.metastore.SessionData;
+import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.util.AsyncSink;
 
 /**
@@ -229,7 +228,7 @@ public class NzTestUtil {
       throws IOException {
     initSqoopOptions(options);
     ConnFactory cf = new ConnFactory(options.getConf());
-    return cf.getManager(options);
+    return cf.getManager(new SessionData(options, new ImportTool()));
   }
 
   public static void dropTableIfExists(Connection conn, String tableName)

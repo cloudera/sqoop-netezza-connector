@@ -27,11 +27,16 @@
   explaining why this is not a bug.
 -->
 <FindBugsFilter>
-  <!-- NetezzaExportMapper generates a SQL statement to launch the export
-       over the FIFO; the user-supplied table name must be put into the
-       statement. -->
+  <!-- NetezzaExportMapper and NetezzaImportMapper generate a SQL statement to
+       launch the export over the FIFO; the user-supplied table name must be
+       put into the statement. -->
   <Match>
     <Class name="com.cloudera.sqoop.netezza.NetezzaExportMapper$JdbcThread" />
+    <Method name="run" />
+    <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING" />
+  </Match>
+  <Match>
+    <Class name="com.cloudera.sqoop.netezza.NetezzaImportMapper$JdbcThread" />
     <Method name="run" />
     <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING" />
   </Match>

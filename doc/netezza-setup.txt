@@ -19,7 +19,7 @@ aaron@paperweight:~$ cat /etc/hosts
 When the netezza system is running, create a user named SQOOPTEST
 and a database named SQOOPTESTDB like so:
 
-$ nzsql -u admin -p password -d system -h nzhost
+$ nzsql -u admin -pw password -d system -h nzhost
 
 # Create test database.
 => CREATE DATABASE SQOOPTESTDB;
@@ -30,13 +30,14 @@ $ nzsql -u admin -p password -d system -h nzhost
 
 
 #  Log back in to the sqooptestdb database, as the admin.
-$ nzsql -u admin -p password -d sqooptestdb -h nzhost
+$ nzsql -u admin -pw password -d sqooptestdb -h nzhost
 
 # Grant all privs on the sqooptestdb to sqooptest.
 => GRANT ALL ON sqooptestdb TO sqooptest;
 
 # Grant ability to create/delete tables to sqooptest.
 => GRANT TABLE TO SQOOPTEST;
+=> GRANT EXTERNAL TABLE TO SQOOPTEST;
 => \q
 
 

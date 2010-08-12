@@ -147,6 +147,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
     // Start the JDBC thread which connects to the database
     // and opens the read side of the FIFO.
     this.jdbcThread = new JdbcThread();
+    this.jdbcThread.setDaemon(true);
     try {
       this.jdbcThread.initConnection();
     } catch (SQLException sqlE) {
@@ -156,7 +157,6 @@ public class NetezzaExportMapper<KEYIN, VALIN>
 
     // Open the write side of the FIFO.
     this.exportStream = new FileOutputStream(nf.getFile());
-
   }
 
   @Override
