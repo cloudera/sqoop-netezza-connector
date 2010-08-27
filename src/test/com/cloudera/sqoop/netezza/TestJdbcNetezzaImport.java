@@ -163,6 +163,12 @@ public class TestJdbcNetezzaImport extends TestCase {
 
     Path warehousePath = new Path(LOCAL_WAREHOUSE_DIR);
     Path targetPath = new Path(warehousePath, tableName);
+
+    FileSystem localFs = FileSystem.getLocal(new Configuration());
+    if (localFs.exists(targetPath)) {
+      localFs.delete(targetPath, true);
+    }
+
     options.setTargetDir(targetPath.toString());
 
     SqoopTool importTool = new ImportTool();

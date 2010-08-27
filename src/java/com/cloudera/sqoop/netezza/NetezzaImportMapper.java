@@ -206,8 +206,7 @@ public class NetezzaImportMapper
     try {
       String line = this.importReader.readLine();
       while (null != line) {
-        context.write(line.toString(), NullWritable.get());
-        context.write(recordDelim, NullWritable.get());
+        context.write(line.toString() + recordDelim, NullWritable.get());
         line = this.importReader.readLine();
       }
     } finally {
