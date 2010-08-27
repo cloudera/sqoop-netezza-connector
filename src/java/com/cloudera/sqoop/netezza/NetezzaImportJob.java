@@ -76,7 +76,6 @@ public class NetezzaImportJob extends ImportJobBase {
     // It's ok if the where clause is null in DBInputFormat.setInput.
     String whereClause = options.getWhereClause();
 
-    // TODO: Quote the table name, here?
     DataDrivenDBInputFormat.setInput(job, DBWritable.class,
         tableName, whereClause,
         mgr.escapeColName(splitByCol), sqlColNames);
@@ -93,9 +92,31 @@ public class NetezzaImportJob extends ImportJobBase {
       LOG.warn("Netezza does not support --enclosed-by. Ignoring.");
     }
 
-    if (escape != '\\' && escape != '\000') {
-      LOG.warn("Netezza only supports '\\' as an escape char. "
-          + "Ignoring setting.");
+    // Netezza requires that the escape character be set to '\\'. If this is
+    // not the case, then the JDBC connection will hang if it tries to import
+    // an un-escaped value. So if it's not set, or incorrectly set, we set it
+    // here. Unfortunately, this will not change the generated code for the
+    // user, so their parse method will be incorrect (this is too late in the
+    // flow).  TODO: We should really add some sort of
+    // ConnManager.validate(JobData data) method that gets called in
+    // SqoopTool.init(); after the SqoopTool.validateOptions() method, but
+    // before the rest of SqoopTool.run() takes off, so that the ConnManager
+    // has a chance to adjust the configuration at the start of the job.
+    if (escape == '\000') {
+      LOG.warn("Netezza requires the '\\' escape character. Enabling "
+          + "escaped-by. Note that the generated parse() method will not "
+          + "be able to detect this condition. You should regenerate any "
+          + "code you plan to use with sqoop codegen --escaped-by '\\' ...");
+      options.setEscapedBy('\\');
+      escape = '\\';
+    } else if (escape != '\\') {
+      LOG.warn("Netezza requires the '\\' escape character. Forcing "
+          + "escaped-by to this setting for the import. Note that the "
+          + "generated parse() method will not be able to detect this "
+          + "condition. You should regenerate any code you plan to use "
+          + "with sqoop codegen --escaped-by '\\' ...");
+      options.setEscapedBy('\\');
+      escape = '\\';
     }
 
     // Reuse keys from MySQL.

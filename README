@@ -1,0 +1,43 @@
+
+This is the proprietary sqoop-connectors package. It includes extensions that
+allow Sqoop to access additional databases. For example, Netezza.
+
+BUILDING:
+
+You can build this project using ant. This project depends on Sqoop, and on
+unreleased features (1.1.0+, available on the master branch). This project
+uses sqoop through maven/ivy.
+
+You should check out sqoop.git in the usual location and build it with:
+$ ant mvn-install
+
+This will build Sqoop and push that to your local ~/.m2 repository.
+
+Then you can build sqoop-connectors:
+
+$ ant jar -Dresolvers=internal
+
+The -Dresolvers=internal specifies that it should look in the local filesystem
+for Sqoop.
+
+
+CONFIGURING:
+
+See doc/netezza-setup.txt for instructions on how to configure a Netezza test
+environment.
+
+See doc/configuring.txt for general instructions on how to tell Sqoop to use
+the third-party adapter package
+
+
+TESTING:
+
+There are some unit tests provided with this project.
+You can run them with:
+
+$ ant test -Dresolvers=internal
+
+These will connect to a Netezza simulator at '//nzhost'; you should add this
+to your /etc/hosts file as per doc/netezza-setup.txt.
+
+

@@ -41,3 +41,10 @@ $ nzsql -u admin -pw password -d sqooptestdb -h nzhost
 => \q
 
 
+The simulator and a test instance is already running and configured on
+minotaur06.sf.cloudera.com. The VMWare files are in /data/1/netezza.
+You can manipulate this by doing 'ssh -Y minotaur06.sf.cloudera.com' to
+forward an SSH connection there, then start the simulator in VMWare
+Workstation (/usr/bin/vmware). You do not need to leave the VMWare
+GUI or the ssh terminal open for this to operate correctly.
+

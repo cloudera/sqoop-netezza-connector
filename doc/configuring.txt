@@ -1,19 +1,28 @@
 
 
-To configure sqoop to use the sqoop-connectors library:
+To configure sqoop 1.1.0 to use the sqoop-connectors library:
 
 1) Register the new ConnectionManager with Sqoop in its configuration.
 
-Edit /etc/sqoop/conf/sqoop-site.xml to contain the property:
+Add a file in $SQOOP_HOME/conf/managers.d (for RPM/Deb installs,
+/etc/sqoop/conf/managers.d) with any filename (e.g., 'netezza') which contains
+the following:
 
-  <property>
-    <name>sqoop.connection.factories</name>
-    <value>com.cloudera.sqoop.manager.EnterpriseManagerFactory,com.cloudera.sqoop.manager.DefaultManagerFactory</value>
-  </property>
+com.cloudera.sqoop.manager.EnterpriseManagerFactory=/path/to/sqoop-connectors/build/sqoop-connectors-1.0.0-SNAPSHOT.jar
 
 
-2) Place the sqoop-connectors-(version).jar file and any additional JDBC
-drivers (e.g., nzjdbc3.jar for Netezza) in /usr/lib/sqoop/lib/.
+If you are installing this at a client site, place the
+sqoop-connectors-1.0.0.jar file in /usr/lib/sqoop/lib, and then you do not
+need to specify a path. The file can simply contain the line:
+
+com.cloudera.sqoop.manager.EnterpriseManagerFactory
+
+
+2) Place any additional JDBC drivers (e.g., nzjdbc3.jar for Netezza) in
+$SQOOP_HOME/lib (/usr/lib/sqoop/lib/).
+
+2a) If you can't/don't want to do this, you can always specify them on the
+command line with "HADOOP_CLASSPATH=/path/to/nzjdbc3.jar sqoop import ..."
 
 3) The normal Sqoop interface should now work with your EDW. Try:
 
