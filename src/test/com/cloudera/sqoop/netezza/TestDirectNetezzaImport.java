@@ -230,9 +230,10 @@ public class TestDirectNetezzaImport extends TestCase {
     return false;
   }
 
-  /** Verify that a specific line exists in the import files for the table. */
-  private void verifyImportLine(String tableName, String line)
-      throws IOException {
+  /**
+   * Returns true if a specific line exists in the import files for the table.
+   */
+  private boolean hasImportLine(String tableName, String line) throws IOException {
     Path warehousePath = new Path(LOCAL_WAREHOUSE_DIR);
     Path targetPath = new Path(warehousePath, tableName);
    
@@ -248,12 +249,32 @@ public class TestDirectNetezzaImport extends TestCase {
       if (p.getName().startsWith("part-")) {
         if (checkFileForLine(fs, p, line)) {
           // We found the line. Nothing further to do.
-          return;
+          return true;
         }
       }
     }
 
-    fail("Could not find line " + line + " in table " + tableName);
+    return false;
+  }
+
+  /** Verify that a specific line exists in the import files for the table. */
+  private void verifyImportLine(String tableName, String line)
+      throws IOException {
+    if (!hasImportLine(tableName, line)) {
+      fail("Could not find line " + line + " in table " + tableName);
+    }
+  }
+
+  /**
+   * Verify that a specific line has been excluded from the import files for
+   * the table.
+   */
+  private void verifyMissingLine(String tableName, String line)
+      throws IOException {
+    if (hasImportLine(tableName, line)) {
+      fail("Found unexpected (intentionally excluded) line " + line
+          + " in table " + tableName);
+    }
   }
 
   public void testBasicDirectImport() throws Exception {
@@ -363,6 +384,38 @@ public class TestDirectNetezzaImport extends TestCase {
     runImport(options, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1\tmeep\\\tbeep");
+  }
+
+  public void testUserConditions() throws Exception {
+    // Test that a user-specified where clause works.
+
+    final String TABLE_NAME = "WHERE_TABLE";
+    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, TABLE_NAME, "1", "'foo'");
+    addRow(conn, TABLE_NAME, "2", "'bar'");
+    addRow(conn, TABLE_NAME, "3", "'baz'");
+    options.setWhereClause("col0 = 2");
+    runImport(options, TABLE_NAME);
+    verifyImportCount(TABLE_NAME, 1);
+    verifyImportLine(TABLE_NAME, "2,bar");
+    verifyMissingLine(TABLE_NAME, "1,foo");
+    verifyMissingLine(TABLE_NAME, "3,baz");
+  }
+
+  public void testMultipleMappers() throws Exception {
+    // Ensure that multiple input target files work.
+    final String TABLE_NAME = "MULTI_TABLE";
+    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, TABLE_NAME, "1", "'foo'");
+    addRow(conn, TABLE_NAME, "2", "'bar'");
+    addRow(conn, TABLE_NAME, "3", "'baz'");
+    addRow(conn, TABLE_NAME, "4", "'biff'");
+    options.setNumMappers(2);
+    runImport(options, TABLE_NAME);
+    verifyImportCount(TABLE_NAME, 4);
+    verifyImportLine(TABLE_NAME, "2,bar");
+    verifyImportLine(TABLE_NAME, "1,foo");
+    verifyImportLine(TABLE_NAME, "3,baz");
   }
 }
 

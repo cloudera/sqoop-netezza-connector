@@ -121,6 +121,16 @@ public class NetezzaImportMapper
         sb.append(" WHERE MOD(DATASLICEID, " + numMappers);
         sb.append(") = " + sliceId);
 
+        // If the user has specified a subset of rows to import,
+        // or an incremental import, ensure that the appropriate conditions
+        // are added here.
+        String userWhereClause = dbConf.getInputConditions();
+        if (null != userWhereClause) {
+          sb.append(" AND ( ");
+          sb.append(userWhereClause);
+          sb.append(" ) ");
+        }
+
         String sql = sb.toString();
         LOG.info("Executing SQL statement: " + sql);
 
