@@ -22,7 +22,7 @@ import com.cloudera.sqoop.ConnFactory;
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.EnterpriseManagerFactory;
-import com.cloudera.sqoop.metastore.SessionData;
+import com.cloudera.sqoop.metastore.JobData;
 import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.util.AsyncSink;
 
@@ -228,7 +228,7 @@ public class NzTestUtil {
       throws IOException {
     initSqoopOptions(options);
     ConnFactory cf = new ConnFactory(options.getConf());
-    return cf.getManager(new SessionData(options, new ImportTool()));
+    return cf.getManager(new JobData(options, new ImportTool()));
   }
 
   public static void dropTableIfExists(Connection conn, String tableName)

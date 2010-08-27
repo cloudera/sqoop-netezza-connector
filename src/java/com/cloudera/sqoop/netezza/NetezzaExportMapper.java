@@ -216,7 +216,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
 
   /**
    * Takes a delimited text record (e.g., the output of a 'Text' object),
-   * re-encodes it for consumption by mysqlimport, and writes it to the pipe.
+   * re-encodes it for consumption by netezza, and writes it to the pipe.
    * @param record A delimited text representation of one record.
    */
   protected void writeRecord(Text record) throws IOException {
@@ -230,6 +230,11 @@ public class NetezzaExportMapper<KEYIN, VALIN>
   }
 
   protected void writeRecord(SqoopRecord r) throws IOException {
+    // TODO: We have a limit on the size of individual fields that can be
+    // exported to Netezza. To enforce these limits, limits, check the size of
+    // values in r.getFieldMap() here. Throw exception or warn and skip record
+    // based on preference on error.  For a faster but less accurate version
+    // of this, just check the length of outputStr.
     String outputStr = r.toString(outputDelimiters);
     byte [] outputBytes = outputStr.getBytes("UTF-8");
     this.exportStream.write(outputBytes, 0, outputBytes.length);
