@@ -105,8 +105,11 @@ public class NetezzaExportMapper<KEYIN, VALIN>
         sb.append("NULLVALUE 'null' ");
         sb.append(")");
 
+        String sql = sb.toString();
+        LOG.info("Executing SQL statement: " + sql);
+
         try {
-          ps = conn.prepareStatement(sb.toString());
+          ps = conn.prepareStatement(sql);
           ps.executeUpdate();
         } finally {
           if (null != ps) {
