@@ -48,7 +48,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
 
   /** The OutputStream we are using to write the fifo data. */
   private OutputStream exportStream;
-  
+
   /** Object that holds/parses a record of the user's input. */
   private SqoopRecord inputRecord;
 
@@ -139,7 +139,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
    * Create a named FIFO, and bind the JDBC connection to the FIFO.
    * A File object representing the FIFO is in 'fifoFile'.
    */
-  private void initImportProcess() throws IOException {
+  private void initExportProcess() throws IOException {
     // Create the FIFO where we'll put the data.
     File taskAttemptDir = TaskId.getLocalWorkPath(conf);
     this.fifoFile = new File(taskAttemptDir, "netezza.txt");
@@ -165,7 +165,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
   @Override
   public void run(Context context) throws IOException, InterruptedException {
     setup(context);
-    initImportProcess();
+    initExportProcess();
     try {
       while (context.nextKeyValue()) {
         map(context.getCurrentKey(), context.getCurrentValue(), context);
@@ -223,13 +223,13 @@ public class NetezzaExportMapper<KEYIN, VALIN>
    * @param record A delimited text representation of one record.
    */
   protected void writeRecord(Text record) throws IOException {
-    try {
-      inputRecord.parse(record);
-    } catch (RecordParser.ParseError e) {
-      throw new IOException(e);
-    }
-
-    writeRecord(inputRecord);
+    // Assumption: The text record is preformatted with Netezza specific
+    // delimiters and other format options. If that is not the case, the
+    // TODO: Make this configurable based on the job by allowing the user
+    // to specify if the input is preformatted or not.
+    String outputStr = record.toString() + "\n";
+    byte [] outputBytes = outputStr.getBytes("UTF-8");
+    this.exportStream.write(outputBytes, 0, outputBytes.length);
   }
 
   protected void writeRecord(SqoopRecord r) throws IOException {
