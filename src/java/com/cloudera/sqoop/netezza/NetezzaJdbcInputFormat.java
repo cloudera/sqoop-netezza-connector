@@ -1,3 +1,4 @@
+// (c) Copyright 2010 Cloudera, Inc. All Rights Reserved.
 /**
  * Licensed to Cloudera, Inc. under one
  * or more contributor license agreements.  See the NOTICE file
@@ -60,7 +61,7 @@ public class NetezzaJdbcInputFormat<T extends DBWritable>
       return splits;
     }
   }
-  
+
 
   @Override
   /** {@inheritDoc} */

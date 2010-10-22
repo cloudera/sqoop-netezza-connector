@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -26,15 +26,10 @@ import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.tool.SqoopTool;
 
-import junit.framework.TestCase;
-
 /**
  * Test the Netezza EDW connector for jdbc mode imports.
  */
 public class TestJdbcNetezzaImport extends TestCase {
-
-  private static Log LOG =
-      LogFactory.getLog(TestJdbcNetezzaImport.class.getName());
 
   protected Configuration conf;
   protected SqoopOptions options;
@@ -44,7 +39,7 @@ public class TestJdbcNetezzaImport extends TestCase {
   @Override
   public void setUp() throws IOException, InterruptedException, SQLException {
     new NzTestUtil().clearNzSessions();
-    conf = NzTestUtil.initConf(new Configuration()); 
+    conf = NzTestUtil.initConf(new Configuration());
     options = getSqoopOptions(conf);
     manager = NzTestUtil.getNzManager(options);
     conn = manager.getConnection();
@@ -81,16 +76,16 @@ public class TestJdbcNetezzaImport extends TestCase {
   /**
    * Create a SqoopOptions to connect to the manager.
    */
-  public SqoopOptions getSqoopOptions(Configuration conf) {
-    SqoopOptions options = new SqoopOptions(conf);
-    NzTestUtil.initSqoopOptions(options);
+  public SqoopOptions getSqoopOptions(Configuration config) {
+    SqoopOptions sqoopOptions = new SqoopOptions(config);
+    NzTestUtil.initSqoopOptions(sqoopOptions);
 
     // Make sure we set numMappers > 1 to use DATASLICEID partitioning.
-    options.setNumMappers(2);
+    sqoopOptions.setNumMappers(2);
 
-    return options;
+    return sqoopOptions;
   }
-  
+
   protected void createTable(Connection c, String tableName, String... colTypes)
       throws SQLException {
 
@@ -158,8 +153,9 @@ public class TestJdbcNetezzaImport extends TestCase {
     }
   }
 
-  protected void runImport(SqoopOptions options, String tableName) throws Exception {
-    options.setTableName(tableName);
+  protected void runImport(SqoopOptions sqoopOptions, String tableName)
+          throws Exception {
+    sqoopOptions.setTableName(tableName);
 
     Path warehousePath = new Path(LOCAL_WAREHOUSE_DIR);
     Path targetPath = new Path(warehousePath, tableName);
@@ -169,10 +165,10 @@ public class TestJdbcNetezzaImport extends TestCase {
       localFs.delete(targetPath, true);
     }
 
-    options.setTargetDir(targetPath.toString());
+    sqoopOptions.setTargetDir(targetPath.toString());
 
     SqoopTool importTool = new ImportTool();
-    Sqoop sqoop = new Sqoop(importTool, options.getConf(), options);
+    Sqoop sqoop = new Sqoop(importTool, sqoopOptions.getConf(), sqoopOptions);
     int ret = Sqoop.runSqoop(sqoop, new String[0]);
     if (0 != ret) {
       throw new Exception("Non-zero return from Sqoop: " + ret);
@@ -186,7 +182,7 @@ public class TestJdbcNetezzaImport extends TestCase {
       throws IOException {
     Path warehousePath = new Path(LOCAL_WAREHOUSE_DIR);
     Path targetPath = new Path(warehousePath, tableName);
-   
+
     FileSystem fs = FileSystem.getLocal(new Configuration());
     FileStatus [] files = fs.listStatus(targetPath);
 
@@ -199,7 +195,8 @@ public class TestJdbcNetezzaImport extends TestCase {
       Path p = stat.getPath();
       if (p.getName().startsWith("part-")) {
         // Found a legit part of the output.
-        BufferedReader r = new BufferedReader(new InputStreamReader(fs.open(p)));
+        BufferedReader r = new BufferedReader(
+                new InputStreamReader(fs.open(p)));
         try {
           while (null != r.readLine()) {
             numLines++;
@@ -241,10 +238,11 @@ public class TestJdbcNetezzaImport extends TestCase {
   /**
    * Returns true if a specific line exists in the import files for the table.
    */
-  protected boolean hasImportLine(String tableName, String line) throws IOException {
+  protected boolean hasImportLine(String tableName, String line)
+          throws IOException {
     Path warehousePath = new Path(LOCAL_WAREHOUSE_DIR);
     Path targetPath = new Path(warehousePath, tableName);
-   
+
     FileSystem fs = FileSystem.getLocal(new Configuration());
     FileStatus [] files = fs.listStatus(targetPath);
 

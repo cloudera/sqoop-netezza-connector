@@ -1,0 +1,62 @@
+
+////
+   Licensed to Cloudera, Inc. under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   Cloudera, Inc. licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+////
+
+Installation
+------------
+
+In order to install the Sqoop connectors, untar the distribution
+in a convenient location such as +/usr/lib+. This should result
+in the creation of directory +/usr/lib/sqoop-connectors-{revnumber}.+
+This directory contains the jar file which has compiled version of
+all the connectors. Note the to this jar file. For example, the 
+path could be: +/usr/lib/sqoop-connectors-{revnumber}/sqoop-connectors-{revnumber}.jar+.
+
+Now create a file called +connectors+ in the directory +$SQOOP_CONF/managers.d+.
+This file should have the connector class name followed by the 
+complete path to the directory where the connector jar is located.
+For example:
+
+----
+com.cloudera.sqoop.manager.EnterpriseManagerFactory=/usr/lib/sqoop-connectors-X.X/sqoop-connectors-X.X.jar
+----
+
+NOTE: Depending upon how Sqoop is installed, the +$SQOOP_CONF+ 
+directory may be in +/etc/sqoop/conf+, +/usr/lib/sqoop/conf+ or 
+elsewhere if Sqoop was installed using the tar-ball distribution.
+
+It is possible that the directory +managers.d+ does not yet exist.
+In that case, you must create this directory in order to install the
+connectors. 
+
+The +EnterpriseManagerFactory+ acts as a single point of delegation 
+for invoking the applicable connector bundled with this distribution.
+However, in order to use a specific connector, there may be additional
+steps necessary to configure it. Please refer to the connector specific
+section below in order to complete those steps. You need to complete
+these steps only for the specific connectors that you would intend
+to use.
+
+Uninstall
+----------
+
+In order to remove the Sqoop connectors, simply delete the +connectors+
+file from +$SQOOP_CONF/managers.d+ directory and remove the files
+from the location the connectors distribution was unpacked. If you 
+did any additional steps for the installation of specific connectors,
+please refer to the connector specific section below to continue to any
+connector specific uninstall steps as necessary.

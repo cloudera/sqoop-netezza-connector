@@ -2,38 +2,18 @@
 
 package com.cloudera.sqoop.netezza;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
-import com.cloudera.sqoop.Sqoop;
 import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.manager.ConnManager;
-import com.cloudera.sqoop.tool.ImportTool;
-import com.cloudera.sqoop.tool.SqoopTool;
-
-import junit.framework.TestCase;
 
 /**
  * Test the Netezza EDW connector for direct mode imports.
  */
 public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
-  private static Log LOG =
+  private static final Log LOG =
       LogFactory.getLog(TestDirectNetezzaImport.class.getName());
 
   protected String getDbFriendlyName() {

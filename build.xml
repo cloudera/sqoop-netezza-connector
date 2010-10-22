@@ -204,7 +204,7 @@
       description="Compile all sources"/>
 
   <target name="package"
-      depends="jar,compile-all,docs,javadoc,ivy-retrieve-redist"
+      depends="jar,compile-all,docs,ivy-retrieve-redist"
       description="Create a redistributable package">
 
     <mkdir dir="${dist.dir}"/>
@@ -214,34 +214,8 @@
       <fileset dir="${build.dir}">
         <include name="${dest.jar}" />
       </fileset>
-    </copy>
-
-    <!-- copy in various components of the initial source layout
-         so that the redistributable can bootstrap itself. -->
-    <copy todir="${dist.dir}" includeEmptyDirs="false" flatten="false">
       <fileset dir="${basedir}">
-        <include name="**/*" />
-        <exclude name="build/**" />
-        <exclude name="lib/**" />
-        <exclude name=".git/**" />
-        <exclude name="tags" />
-        <exclude name=".project" />
-        <exclude name=".classpath" />
-      </fileset>
-    </copy>
-
-    <!-- copy the dependency libraries from ivy into the output lib dir -->
-    <mkdir dir="${dist.dir}/lib"/>
-    <copy todir="${dist.dir}/lib" includeEmptyDirs="false" flatten="true">
-      <fileset dir="${redist.ivy.lib.dir}">
-        <include name="**/*.jar" />
-      </fileset>
-    </copy>
-
-    <copy todir="${dist.dir}/lib" includeEmptyDirs="false">
-      <fileset dir="${lib.dir}">
-        <include name="**/*" />
-        <exclude name="ivy*" />
+        <include Name="LICENSE.txt"/>
       </fileset>
     </copy>
 
@@ -251,18 +225,6 @@
         <include name="**/*.html" />
       </fileset>
     </copy>
-
-    <!-- make sure the bin scripts are executable. -->
-    <chmod perm="ugo+x" type="file" parallel="false">
-      <fileset dir="${dist.dir}/bin" />
-    </chmod>
-
-    <!-- make sure any scripts named *.sh are executable. -->
-    <chmod perm="ugo+x" type="file" parallel="false">
-      <fileset dir="${dist.dir}">
-        <include name="**/*.sh" />
-      </fileset>
-    </chmod>
   </target>
 
   <target name="tar" depends="package" description="Create release tarball">
@@ -478,38 +440,6 @@
       <arg value="VERSION=${version}" />
     </exec>
     <touch file="${build.docs.timestamp}" />
-  </target>
-
-  <target name="javadoc-uptodate" depends="init">
-    <uptodate property="javadoc.is.uptodate">
-      <srcfiles dir="${src.dir}">
-        <include name="**/*.java" />
-        <include name="**/*.html" />
-      </srcfiles>
-      <mapper type="merge" to="${build.javadoc}/index.html" />
-    </uptodate>
-  </target>
-
-  <target name="javadoc" description="Build javadoc"
-      depends="init,javadoc-uptodate,compile" unless="javadoc.is.uptodate">
-    <mkdir dir="${build.javadoc}" />
-    <exec executable="date" outputproperty="year">
-      <arg value="+%Y" />
-    </exec>
-    <javadoc
-      packagenames="com.cloudera.sqoop.*"
-      destdir="${build.javadoc}"
-      author="true"
-      version="true"
-      use="true"
-      windowtitle="${Name} ${version} API"
-      doctitle="${Name} ${version} API"
-      bottom="Copyright &amp;copy; ${year} Cloudera, Inc.">
-      <packageset dir="${src.dir}" />
-      <classpath>
-        <path refid="compile.classpath" />
-      </classpath>
-    </javadoc>
   </target>
 
   <target name="checkfailure" depends="test-core" if="tests.failed">
