@@ -20,4 +20,4 @@ Getting Support
 ---------------
 
 Support for Sqoop Connectors is available via Cloudera Enterprise Support.
-Please refer to http://www.cloudera.com/support for more details.
+Refer to http://www.cloudera.com/support for more details.

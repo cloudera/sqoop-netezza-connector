@@ -6,17 +6,17 @@ COMPANY OR OTHER ENTITY, YOU REPRESENT THAT YOU ARE THE EMPLOYEE OR AGENT OF
 SUCH COMPANY (OR OTHER ENTITY) AND YOU HAVE THE AUTHORITY TO ENTER INTO THIS
 AGREEMENT ON BEHALF OF SUCH COMPANY (OR OTHER ENTITY). 
 
-BY USING THE ACCOMPNAYING SOFTWARE, YOU ACKNOWLEDGE AND AGREE THAT YOU HAVE 
+BY USING THE ACCOMPANYING SOFTWARE, YOU ACKNOWLEDGE AND AGREE THAT YOU HAVE 
 READ ALL OF THE TERMS AND CONDITIONS SET FORTH BELOW, UNDERSTAND ALL OF THE 
 TERMS AND CONDITIONS OF THIS AGREEMENT, AGREE TO BE BOUND BY ALL OF THE 
 TERMS AND CONDITIONS OF THIS AGREEMENT.
 
 IF YOU DO NOT AGREE TO ANY OF THE TERMS OR CONDITIONS OF THIS AGREEMENT, 
 CLOUDERA IS UNWILLING TO LICENSE THE SOFTWARE (AS DEFINED BELOW) TO YOU, AND 
-YOU MUST DELETE ALL SOFTWARE ACCOMPNAYING THIS AGREEMENT IMMEDIATELY. 
+YOU MUST DELETE ALL SOFTWARE ACCOMPANYING THIS AGREEMENT IMMEDIATELY. 
 
 THE “EFFECTIVE DATE” OF THIS AGREEMENT IS THE DATE UPON WHICH YOU CLICK 
-RECEIVE THIS AGREEMENT ALONG WITH THE ACOMPANYING SOFTWARE. FOR THE PURPOSE 
+RECEIVE THIS AGREEMENT ALONG WITH THE ACCOMPANYING SOFTWARE. FOR THE PURPOSE 
 OF THIS AGREEMENT, YOU AND, IF APPLICABLE, SUCH COMPANY (OR OTHER ENTITY) 
 CONSTITUTES “CUSTOMER”.
 
@@ -44,7 +44,7 @@ into this Agreement by this reference).
 Third Party Software described at www.cloudera.com/thirdpartysoftware (and 
 incorporated into this Agreement by this reference).
 
-1.6	“Trial Period” means the 180 day period commencing upon the Effective 
+1.6	“Trial Period” means the 90 day period commencing upon the Effective 
 Date.
 
 2.License; Delivery; Support Services. Cloudera grants to Customer a 
@@ -89,12 +89,12 @@ Confidential Information as Customer uses to protect its own confidential
 information from unauthorized use or disclosure, but in no event less than 
 reasonable care. Confidential Information will be used by Customer solely for 
 the purpose of carrying out Customer’s obligations under this Agreement. 
-Confidential Information will not include information that: (i) is in or enters 
+Confidential Information will not include information that: (i) is in or enters 
 the public domain without breach of this Agreement through no fault of Customer; 
-(ii) Customer can reasonably demonstrate was in its possession prior to first 
-receiving it from Cloudera; (iii) Customer can demonstrate was developed by 
+(ii) Customer can reasonably demonstrate was in its possession prior to first 
+receiving it from Cloudera; (iii) Customer can demonstrate was developed by 
 Customer independently and without use of or reference to the Confidential 
-Information; or (iv) Customer receives from a third party without restriction 
+Information; or (iv) Customer receives from a third party without restriction 
 on disclosure and without breach of a nondisclosure obligation. Notwithstanding 
 any terms to the contrary in this Agreement, any suggestions, comments or other 
 feedback provided by Customer to Cloudera with respect to the Software 
@@ -111,9 +111,9 @@ BUGS, ERRORS, OR OMISSIONS. CLOUDERA AND ITS SUPPLIERS DISCLAIM ANY AND ALL
 WARRANTIES AND REPRESENTATIONS (EXPRESS OR IMPLIED, ORAL OR WRITTEN) WITH 
 RESPECT TO THE SOFTWARE WHETHER ALLEGED TO ARISE BY OPERATION OF LAW, BY REASON 
 OF CUSTOM OR USAGE IN THE TRADE, BY COURSE OF DEALING OR OTHERWISE, INCLUDING 
-ANY AND ALL (I) WARRANTIES OF MERCHANTABILITY, (II) WARRANTIES OF FITNESS OR 
+ANY AND ALL (I) WARRANTIES OF MERCHANTABILITY, (II) WARRANTIES OF FITNESS OR 
 SUITABILITY FOR ANY PURPOSE (WHETHER OR NOT CLOUDERA KNOWS, HAS REASON TO KNOW, 
-HAS BEEN ADVISED, OR IS OTHERWISE AWARE OF ANY SUCH PURPOSE), AND (C) 
+HAS BEEN ADVISED, OR IS OTHERWISE AWARE OF ANY SUCH PURPOSE), AND (C) 
 WARRANTIES OF NONINFRINGEMENT OR CONDITION OF TITLE. CUSTOMER ACKNOWLEDGES 
 AND AGREES THAT CUSTOMER HAS RELIED ON NO WARRANTIES.
 

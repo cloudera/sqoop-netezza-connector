@@ -16,49 +16,48 @@
    limitations under the License.
 ////
 
-Supported Connectors
+Available Connectors
 --------------------
 
-This release of Sqoop Connectors provides support for the following enterprise
-systems:
-
-`--------------------------------`------------------------------------------
-Enterprise System                Supported Version
-----------------------------------------------------------------------------
-Netezza                          Netezza JDBC Version 5.0
-----------------------------------------------------------------------------
+This release of Sqoop Connectors provides the connector for Netezza Database 
+System via Netezza JDBC Version 5.0 drivers. This connector is formally known
+as the Cloudera connector for Netezza.
 
 Cloudera Connector for Netezza
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Cloudera connector for Netezza provided with this release of Sqoop Connectors 
-is designed to utilize Netezza's high throughput data transfer system. 
+is designed to use Netezza's high-throughput, data transfer system. 
 
 Installation and Removal
 ^^^^^^^^^^^^^^^^^^^^^^^^
-In order to ensure that Cloudera connector for Netezza can be used, you must 
-place the Netezza JDBC driver in the +$SQOOP_HOME/lib+ directory. Without this 
-driver the connector will not function correctly. 
+To ensure that Cloudera connector for Netezza can be used, 
+copy the Netezza JDBC driver in the +lib+ directory of Sqoop installation. 
+This driver may be obtained from the Netezza Client distribution for your
+operating system. Without this driver, the connector will not function 
+correctly.
 
-If you are uninstalling the Sqoop connectors, you should also remove the JDBC
-driver for Netezza that you placed in the +$SQOOP_HOME/lib+ directory as it 
-will no longer be needed by Sqoop.
+If you are uninstalling the Sqoop connector, you should also remove the JDBC
+driver for Netezza that you copied to the +lib+ directory of Sqoop installation
+because Sqoop will no longer need it.
 
-Usage
-^^^^^
+Using Cloudera Connector for Netezza
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Once Sqoop Connectors have been installed and the necessary JDBC driver for 
-Netezza has been placed in the +$SQOOP_HOME/lib+ directory, you can exercise
-this connector directly by invoking Sqoop tools with appropriate connection
-string. The Cloudera connector for Netezza will kick in only if the connection 
-string being used is of the form +jdbc:netezza://<nz-host>/<nz-instance>+ where +<nz-host>+
+After Sqoop connectors have been installed and the necessary JDBC driver for 
+Netezza has been copied to the +lib+ directory of Sqoop installation, you can use
+this connector by invoking the Sqoop tools with the appropriate connection
+string. The Cloudera connector for Netezza will be used by Sqoop only if the 
+connection string being used is of the form 
++jdbc:netezza://<nz-host>/<nz-instance>+ where +<nz-host>+
 is the host name of the machine where Netezza server runs and +<nz-instance>+
 is the Netezza database instance name. Also, in order to effectively use the
-Netezza connector, you must specify the +\--direct+ option along with explicitly
-set number of mappers as greater than one.
+Netezza connector, you must specify the +\--direct+ option along with 
+a number of mappers greater than one.
 
 
-For example, an import invocation would be something like follows:
+For example, the following command invokes the Sqoop import tool with eight
+mappers and uses the Cloudera connector for Netezza.
 
 ----
 $ sqoop import --connect jdbc:netezza://localhost/MYDB --username arvind \
@@ -66,7 +65,8 @@ $ sqoop import --connect jdbc:netezza://localhost/MYDB --username arvind \
 --fields-terminated-by ',' --lines-terminated-by '\n'
 ----
 
-Similarly, an export invocation will be as follows:
+This command invokes the Sqoop export tool with eight mappers and uses 
+the Cloudera connector for Netezza.
 
 ----
 $ sqoop export --connect jdbc:netezza://localhost/MYDB --username arvind \
@@ -75,7 +75,7 @@ $ sqoop export --connect jdbc:netezza://localhost/MYDB --username arvind \
 --input-lines-terminated-by '\n'
 ----
 
-IMPORTANT: At this time, the Netezza connector for Sqoop requires that the format options 
-be explicitly set to: field delimiter as comma (,), record delimiter as new-line ('\n')
-and escape character as back-slash (\). Failing to set these explicitly could result in
-unexpected behavior of the system.
+IMPORTANT: The Netezza connector for Sqoop requires that you explicitly set 
+the format options to: field delimiter as comma (,), record delimiter as 
+new-line ('\n') and escape character as back-slash (\). If you do not set 
+these explicitly, the system may not behave as expected.

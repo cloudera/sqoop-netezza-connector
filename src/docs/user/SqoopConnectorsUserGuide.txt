@@ -16,8 +16,8 @@
    limitations under the License.
 ////
 
-Sqoop Connectors User Guide (v{revnumber})
-==========================================
+Sqoop Connectors Installation and User Guide (v{revnumber})
+===========================================================
 
 
 

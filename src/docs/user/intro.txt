@@ -21,10 +21,10 @@ Introduction
 ------------
 
 Sqoop connectors are standard Sqoop extensions that allow Sqoop to
-interoperate with specialized enterprise systems. Once installed,
-these connectors allow various Sqoop tools such as +sqoop-import+
-and +sqoop-export+ to operate directly with the enterprise systems
-that the connectors are designed for.
+operate with specialized enterprise systems such as Netezza. After
+installation, these connectors allow various Sqoop tools such as 
++sqoop-import+ and +sqoop-export+ to operate directly with these 
+enterprise systems.
 
 This document describes how to install and configure these
 connectors within a Sqoop installation and provides reference 

@@ -39,7 +39,7 @@
   <span align="center"><a href="index.html"><img src="images/home.png"
       alt="Documentation Home" /></a></span>
   <br/>
-  This document was built from Sqoop Connectors source. For more information visit
+  This document was built from the Sqoop Connectors source. For more information, see
   <a href="http://www.cloudera.com/support">http://www.cloudera.com/support</a>.
   </div>
 

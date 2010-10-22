@@ -23,5 +23,5 @@ Sqoop Connectors Documentation (v{revnumber})
 
 The following pages are the documentation for Sqoop Connectors v{revnumber}:
 
-- link:SqoopConnectorsUserGuide.html[Sqoop Connectors User Guide]
+- link:SqoopConnectorsUserGuide.html[Sqoop Connectors Installation and User Guide]
 
