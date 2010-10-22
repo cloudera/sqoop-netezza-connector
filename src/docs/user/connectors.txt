@@ -28,19 +28,17 @@ Enterprise System                Supported Version
 Netezza                          Netezza JDBC Version 5.0
 ----------------------------------------------------------------------------
 
-Netezza Connector
-~~~~~~~~~~~~~~~~~
+Cloudera Connector for Netezza
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Netezza connector provided with this release of Sqoop Connectors is designed
-to work with Netezza's fast-path data transfer system. For optimal performance
-we recommend that the user specify the +\--direct+ argument during import and
-export invocations of Sqoop.
+The Cloudera connector for Netezza provided with this release of Sqoop Connectors 
+is designed to utilize Netezza's high throughput data transfer system. 
 
 Installation and Removal
 ^^^^^^^^^^^^^^^^^^^^^^^^
-In order to ensure that Netezza connector can be used, you must place the
-Netezza JDBC driver in the +$SQOOP_HOME/lib+ directory. Without this driver
-the Netezza connector will not function correctly. 
+In order to ensure that Cloudera connector for Netezza can be used, you must 
+place the Netezza JDBC driver in the +$SQOOP_HOME/lib+ directory. Without this 
+driver the connector will not function correctly. 
 
 If you are uninstalling the Sqoop connectors, you should also remove the JDBC
 driver for Netezza that you placed in the +$SQOOP_HOME/lib+ directory as it 
@@ -52,8 +50,8 @@ Usage
 Once Sqoop Connectors have been installed and the necessary JDBC driver for 
 Netezza has been placed in the +$SQOOP_HOME/lib+ directory, you can exercise
 this connector directly by invoking Sqoop tools with appropriate connection
-string. The Netezza connector will kick in only if the connection string being
-used is of the form +jdbc:netezza://<nz-host>/<nz-instance>+ where +<nz-host>+
+string. The Cloudera connector for Netezza will kick in only if the connection 
+string being used is of the form +jdbc:netezza://<nz-host>/<nz-instance>+ where +<nz-host>+
 is the host name of the machine where Netezza server runs and +<nz-instance>+
 is the Netezza database instance name. Also, in order to effectively use the
 Netezza connector, you must specify the +\--direct+ option along with explicitly
