@@ -23,18 +23,18 @@ To install the Sqoop connectors, open the distribution archive
 in a convenient location such as +/usr/lib+. This will create a
 directory such as +/usr/lib/sqoop-connectors-{revnumber}+
 that contains the jar file of the compiled version of
-all connectors. Note the path to this jar file. For example, 
+all connectors. Note the path to this jar file. For example,
 +/usr/lib/sqoop-connectors-{revnumber}/sqoop-connectors-{revnumber}.jar+.
 
-Next, create a text file called +connectors+ in a directory named 
-+managers.d+ within the configuration directory of Sqoop.  Create 
+Next, create a text file called +connectors+ in a directory named
++managers.d+ within the configuration directory of Sqoop.  Create
 the directory +managers.d+ if it does not exist.
 
 NOTE: Depending on how Sqoop is installed, its configuration
-directory may be in +/etc/sqoop/conf+, +/usr/lib/sqoop/conf+ or 
+directory may be in +/etc/sqoop/conf+, +/usr/lib/sqoop/conf+ or
 elsewhere if Sqoop was installed using the tar-ball distribution.
 
-The +connectors+ file must have the connector class name followed by the 
+The +connectors+ file must have the connector class name followed by the
 complete path to the directory where the connector jar is located.
 For example:
 
@@ -42,7 +42,7 @@ For example:
 com.cloudera.sqoop.manager.EnterpriseManagerFactory=/usr/lib/sqoop-connectors-X.X/sqoop-connectors-X.X.jar
 ----
 
-The +EnterpriseManagerFactory+ acts as a single point of delegation 
+The +EnterpriseManagerFactory+ acts as a single point of delegation
 for invoking the applicable connector bundled with this distribution.
 However, in order to use a specific connector, there may be additional
 steps necessary to configure it. Refer to the connector-specific
@@ -54,8 +54,8 @@ Uninstalling the Sqoop Connectors
 ---------------------------------
 
 To remove the Sqoop connectors, delete the +connectors+
-file from +managers.d+ directory located under Sqoop configuration 
-directory, and remove the files from the connectors distribution. 
-If you did any additional steps for the installation of specific 
-connectors, refer to the connector-specific section below to 
+file from +managers.d+ directory located under Sqoop configuration
+directory, and remove the files from the connectors distribution.
+If you did any additional steps for the installation of specific
+connectors, refer to the connector-specific section below to
 continue to any connector-specific uninstall steps as necessary.

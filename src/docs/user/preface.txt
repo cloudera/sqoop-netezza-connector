@@ -22,8 +22,8 @@ Prerequisites
 -------------
 
 In order to use Sqoop connectors, you must have a functioning Sqoop
-installation. Depending on the way Sqoop is installed, you may 
-need administrative privileges in order to create or modify 
+installation. Depending on the way Sqoop is installed, you may
+need administrative privileges in order to create or modify
 configuration files.
 
 For more information on how to install, configure, and use Sqoop,
