@@ -71,11 +71,10 @@ the Cloudera connector for Netezza.
 ----
 $ sqoop export --connect jdbc:netezza://localhost/MYDB --username arvind \
 --password xxxxx --direct --export-dir /user/arvind/MY_TABLE --table MY_TABLE_TARGET \
---num-mappers 8 --input-escaped-by '\\' --input-fields-terminated-by ',' \
---input-lines-terminated-by '\n'
+--num-mappers 8 --input-escaped-by '\\' --input-fields-terminated-by ','
 ----
 
-IMPORTANT: The Netezza connector for Sqoop requires that you explicitly set
-the format options to: field delimiter as comma (,), record delimiter as
-new-line ('\n') and escape character as back-slash (\). If you do not set
-these explicitly, the system may not behave as expected.
+IMPORTANT: The Cloudera Connector for Netezza does not support the specification of
++\--input-enclosed-by+ or +\--input-lines-terminated-by+ options. Both of these
+settings when specified during an export operation will be ignored. Also, the only
+supported escape character is the back-slash (+\+) character.

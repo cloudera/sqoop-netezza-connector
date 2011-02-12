@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
@@ -14,6 +15,7 @@ import org.apache.hadoop.mapreduce.lib.db.DBWritable;
 
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.ExportJobContext;
+import com.cloudera.sqoop.manager.MySQLUtils;
 import com.cloudera.sqoop.mapreduce.ExportJobBase;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat;
@@ -54,7 +56,36 @@ public class NetezzaExportJob extends ExportJobBase {
     DataDrivenDBInputFormat.setInput(job, DBWritable.class,
         tableName, null, null, new String[0]);
 
-    // Configure the actual InputFormat to use. 
+    char field = options.getInputFieldDelim();
+    char record = options.getInputRecordDelim();
+    char escape = options.getInputEscapedBy();
+    char enclose = options.getInputEnclosedBy();
+
+    if (enclose != '\000') {
+      LOG.warn("Netezza does not support --input-enclosed-by. Ignoring.");
+    }
+
+    if (escape != '\\') {
+      LOG.warn("Netezza requires the '\\' escape character. Forcing "
+          + "escaped-by to this setting for the export. Note that the "
+          + "generated parse() method will not be able to detect this "
+          + "condition. You should regenerate any code you plan to use "
+          + "with sqoop codegen --escaped-by '\\' ...");
+      options.setInputEscapedBy('\\');
+      escape = '\\';
+    }
+
+    if (record != '\000') {
+      LOG.warn("Netezza does not support --input-lines-terminated-by. "
+          + "Ignoring.");
+    }
+
+    // Reuse keys from MySQL.
+    Configuration conf = job.getConfiguration();
+    conf.setInt(MySQLUtils.OUTPUT_FIELD_DELIM_KEY, field);
+    conf.setInt(MySQLUtils.OUTPUT_ESCAPED_BY_KEY, escape);
+
+    // Configure the actual InputFormat to use.
     super.configureInputFormat(job, tableName, tableClassName, splitByCol);
   }
 

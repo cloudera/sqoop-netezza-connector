@@ -21,6 +21,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import com.cloudera.sqoop.io.NamedFifo;
 import com.cloudera.sqoop.lib.DelimiterSet;
 import com.cloudera.sqoop.lib.SqoopRecord;
+import com.cloudera.sqoop.manager.MySQLUtils;
 import com.cloudera.sqoop.mapreduce.ExportJobBase;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.util.TaskId;
@@ -86,6 +87,11 @@ public class NetezzaExportMapper<KEYIN, VALIN>
       PreparedStatement ps = null;
 
       try {
+        char fieldDelim = (char) conf.getInt(
+            MySQLUtils.OUTPUT_FIELD_DELIM_KEY, (int) ',');
+        char escape = (char) conf.getInt(
+            MySQLUtils.OUTPUT_ESCAPED_BY_KEY, '\000');
+
         DBConfiguration dbConf = new DBConfiguration(conf);
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
@@ -95,8 +101,12 @@ public class NetezzaExportMapper<KEYIN, VALIN>
         sb.append("' USING (REMOTESOURCE 'JDBC' ");
         sb.append("BOOLSTYLE 'TRUE_FALSE' ");
         sb.append("CRINSTRING FALSE ");
-        sb.append("DELIMITER ',' ");
-        sb.append("ENCODING 'internal' ");
+        sb.append("DELIMITER ");
+        sb.append(Integer.toString(fieldDelim));
+        sb.append(" ENCODING 'internal' ");
+        if (escape != '\000') {
+          sb.append("ESCAPECHAR '\\' ");
+        }
         sb.append("ESCAPECHAR '\\' ");
         sb.append("FORMAT 'text' ");
         sb.append("INCLUDEZEROSECONDS TRUE ");

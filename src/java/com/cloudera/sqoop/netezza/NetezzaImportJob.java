@@ -119,11 +119,14 @@ public class NetezzaImportJob extends ImportJobBase {
       escape = '\\';
     }
 
+    if (record != '\000') {
+      LOG.warn("Netezza does not support --lines-terminated-by. Ignoring.");
+    }
+
     // Reuse keys from MySQL.
     Configuration conf = job.getConfiguration();
     conf.setInt(MySQLUtils.OUTPUT_FIELD_DELIM_KEY, field);
     conf.setInt(MySQLUtils.OUTPUT_ESCAPED_BY_KEY, escape);
-    conf.setInt(MySQLUtils.OUTPUT_RECORD_DELIM_KEY, record);
 
     LOG.debug("Using InputFormat: " + inputFormatClass);
     job.setInputFormatClass(getInputFormatClass());

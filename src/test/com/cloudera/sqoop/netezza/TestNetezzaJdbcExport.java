@@ -75,8 +75,10 @@ public class TestNetezzaJdbcExport extends TestCase {
   }
 
   protected SqoopOptions getSqoopOptions() {
-    SqoopOptions options = new SqoopOptions(getConf());
-    return NzTestUtil.initSqoopOptions(options);
+    SqoopOptions options =
+      NzTestUtil.initSqoopOptions(new SqoopOptions(getConf()));
+    options.setInputFieldsTerminatedBy(',');
+    return options;
   }
 
   public void setUp() {
@@ -151,7 +153,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     /**
      * Given a ResultSet already aligned via next() on the first row of the
      * results, check that the row matches what we expect it to. Calls
-     * fail() if an unexpected result is present. 
+     * fail() if an unexpected result is present.
      */
     void check(ResultSet rs) throws SQLException;
   }
@@ -164,7 +166,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     Connection c = mgr.getConnection();
     PreparedStatement ps = null;
     ResultSet rs = null;
-    
+
     try {
       ps = c.prepareStatement("SELECT val FROM " + getTableName()
           + " WHERE id = ?");
@@ -203,7 +205,6 @@ public class TestNetezzaJdbcExport extends TestCase {
     options.setExplicitDelims(true);
     options.setExportDir(p.toString());
     options.setInputLinesTerminatedBy('\n');
-    options.setInputFieldsTerminatedBy(',');
     options.setInputEscapedBy('\\');
     options.setCodeOutputDir(TEMP_BASE_DIR);
     options.setNumMappers(1);
