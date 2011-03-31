@@ -18,7 +18,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
-import com.cloudera.sqoop.shims.HadoopShim;
+import com.cloudera.sqoop.config.ConfigurationHelper;
 
 /**
  * InputFormat to facilitate direct-mode import from Netezza.
@@ -75,7 +75,7 @@ public class NetezzaImportInputFormat
     // the rows with hash % num_mappers = k to the k'th mapper. Enumerate
     // a list of values 0..k-1.
 
-    int numMappers = HadoopShim.get().getJobNumMaps(context);
+    int numMappers = ConfigurationHelper.getJobNumMaps(context);
     List<InputSplit> splits = new ArrayList<InputSplit>();
     for (int i = 0; i < numMappers; i++) {
       splits.add(new IntSplit(i));

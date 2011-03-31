@@ -33,7 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.mapreduce.db.DBSplitter;
 import com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat;
-import com.cloudera.sqoop.shims.HadoopShim;
+import com.cloudera.sqoop.config.ConfigurationHelper;
 
 /**
  * An InputFormat that uses a netezza-specific partitioning strategy
@@ -51,7 +51,7 @@ public class NetezzaJdbcInputFormat<T extends DBWritable>
       // DATASLICEID specifying its locality. We want to have a split
       // correspond to all data on a single DATASLICEID. We just enumerate a
       // set of splits based purely on the number of tasks.
-      int targetNumTasks = HadoopShim.get().getConfNumMaps(conf);
+      int targetNumTasks = ConfigurationHelper.getConfNumMaps(conf);
       for (int i = 0; i < targetNumTasks; i++) {
         splits.add(new DataDrivenDBInputFormat.DataDrivenDBInputSplit(
             "MOD(DATASLICEID, " + targetNumTasks + ") = " + i,
@@ -66,7 +66,7 @@ public class NetezzaJdbcInputFormat<T extends DBWritable>
   @Override
   /** {@inheritDoc} */
   public List<InputSplit> getSplits(JobContext job) throws IOException {
-    int targetNumTasks = HadoopShim.get().getJobNumMaps(job);
+    int targetNumTasks = ConfigurationHelper.getJobNumMaps(job);
     DBConfiguration dbConf = new DBConfiguration(job.getConfiguration());
     if (1 == targetNumTasks || dbConf.getInputTableName() == null) {
       // We're using either a singleton split, or we are partitioning a

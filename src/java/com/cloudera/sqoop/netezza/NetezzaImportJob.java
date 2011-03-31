@@ -9,16 +9,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.db.DBWritable;
 
 import com.cloudera.sqoop.mapreduce.ImportJobBase;
+import com.cloudera.sqoop.mapreduce.RawKeyTextOutputFormat;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat;
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.MySQLUtils;
 import com.cloudera.sqoop.manager.ImportJobContext;
-import com.cloudera.sqoop.shims.ShimLoader;
 
 /**
  * Class that runs an import job using netezza remote external tables.
@@ -31,9 +30,8 @@ public class NetezzaImportJob extends ImportJobBase {
   public NetezzaImportJob(ImportJobContext context)
       throws ClassNotFoundException {
     super(context.getOptions(), NetezzaImportMapper.class,
-        NetezzaImportInputFormat.class,
-        (Class<? extends OutputFormat>) ShimLoader.getShimClass(
-            "com.cloudera.sqoop.mapreduce.RawKeyTextOutputFormat"), context);
+        NetezzaImportInputFormat.class, RawKeyTextOutputFormat.class,
+        context);
   }
 
   /**

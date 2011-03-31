@@ -22,7 +22,7 @@ import org.apache.hadoop.util.StringUtils;
 import com.cloudera.sqoop.io.NamedFifo;
 import com.cloudera.sqoop.manager.MySQLUtils;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
-import com.cloudera.sqoop.shims.HadoopShim;
+import com.cloudera.sqoop.config.ConfigurationHelper;
 import com.cloudera.sqoop.util.TaskId;
 
 /**
@@ -79,7 +79,7 @@ public class NetezzaImportMapper
       LOG.debug("Starting JDBC comm thread.");
 
       try {
-        int numMappers = HadoopShim.get().getConfNumMaps(conf);
+        int numMappers = ConfigurationHelper.getConfNumMaps(conf);
         DBConfiguration dbConf = new DBConfiguration(conf);
         StringBuilder sb = new StringBuilder();
 
