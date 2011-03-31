@@ -2,9 +2,13 @@
 
 package com.cloudera.sqoop.manager;
 
+import java.lang.reflect.Constructor;
+
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.netezza.DirectNetezzaManager;
 import com.cloudera.sqoop.netezza.NetezzaManager;
+import com.cloudera.sqoop.teradata.DirectTeradataManager;
+import com.cloudera.sqoop.teradata.TeradataManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +25,25 @@ public class EnterpriseManagerFactory extends ManagerFactory {
   @Override
   public ConnManager accept(SqoopOptions options) {
 
+    if (null != options.getConnManagerClassName()){
+      String className = options.getConnManagerClassName();
+      ConnManager connManager = null;
+      try {
+        Class<ConnManager> cls = (Class<ConnManager>) Class.forName(className);
+        Constructor<ConnManager> constructor =
+          cls.getDeclaredConstructor(SqoopOptions.class);
+        connManager = constructor.newInstance(options);
+      } catch (Exception e) {
+        System.err
+          .println("problem finding the connection manager for class name :"
+            + className);
+        // Log the stack trace for this exception
+        LOG.debug(e.getMessage(), e);
+        // Print exception message.
+        System.err.println(e.getMessage());
+      }
+      return connManager;
+    }
     String connectStr = options.getConnectString();
 
     // java.net.URL follows RFC-2396 literally, which does not allow a ':'
@@ -62,6 +85,12 @@ public class EnterpriseManagerFactory extends ManagerFactory {
         return new DirectNetezzaManager(options);
       } else {
         return new NetezzaManager(options);
+      }
+    } else if (scheme.equals("jdbc:teradata:")) {
+      if (options.isDirect()) {
+        return new DirectTeradataManager(options);
+      } else {
+        return new TeradataManager(options);
       }
     } else {
       return null;
