@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.db.DBWritable;
 
 import com.cloudera.sqoop.SqoopOptions;
@@ -21,7 +22,7 @@ import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat;
 
 /**
- * Class that runs an import job
+ * Class that runs an import job.
  */
 public class TeradataImportJob extends DataDrivenImportJob {
 
@@ -93,10 +94,8 @@ public class TeradataImportJob extends DataDrivenImportJob {
 
       LOG.debug("Using InputFormat: " + inputFormatClass);
       job.setInputFormatClass(inputFormatClass);
-    } catch (ClassNotFoundException cnfe) {
-      throw new IOException(cnfe);
-    } catch (SQLException se) {
-      throw new IOException(se);
+    } catch (Exception e) {
+      throw new IOException(e);
     } finally {
       try {
         mgr.close();
@@ -107,4 +106,9 @@ public class TeradataImportJob extends DataDrivenImportJob {
     }
   }
 
+  @Override
+  protected Class<? extends OutputFormat> getOutputFormatClass()
+      throws ClassNotFoundException {
+      return TeradataRawKeyTextOutputFormat.class;
+  }
 }

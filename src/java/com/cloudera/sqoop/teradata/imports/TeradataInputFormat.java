@@ -18,7 +18,12 @@ import org.apache.hadoop.mapreduce.lib.db.DBWritable;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat;
 import com.cloudera.sqoop.teradata.util.TemporaryTableGenerator;
+import com.cloudera.sqoop.teradata.util.TeradataConstants;
 
+/**
+ * An Teradata-specific DataDrivenDBInputFormat that provides the record reader 
+ * and inputSplits.
+ */
 public class TeradataInputFormat<T extends DBWritable> extends
     DataDrivenDBInputFormat<T> {
 
@@ -39,10 +44,10 @@ public class TeradataInputFormat<T extends DBWritable> extends
     @SuppressWarnings("unchecked")
     Class<T> inputClass = (Class<T>) (dbConf.getInputClass());
     String dbProductName = getDBProductName();
-    TeradataRecordReader<LongWritable, T> teradataRecordReader = null;
+    TeradataRecordReader<T> teradataRecordReader = null;
     // Generic reader.
     try {
-      teradataRecordReader = new TeradataRecordReader<LongWritable, T>(
+      teradataRecordReader = new TeradataRecordReader<T>(
           (TeradataInputSplit) split, inputClass, getConf(), getConnection(),
           dbConf, dbConf.getInputConditions(), dbConf.getInputFieldNames(),
           dbConf.getInputTableName(), dbProductName);
@@ -75,26 +80,24 @@ public class TeradataInputFormat<T extends DBWritable> extends
    * @param tableName
    * @param intermediateTableName
    * @param sqlColNames
-   * @throws IOException
-   * @throws SQLException
-   * @throws ClassNotFoundException 
+   * @throws Exception 
    */
   public static void setInput(Job job, String tableName, int mappersNum,
-      String[] colNames) throws IOException, SQLException,
-      ClassNotFoundException {
+      String[] colNames) throws Exception {
     Configuration conf = job.getConfiguration();
     String intermediateTableName = getIntermediateTableName(tableName, conf);
     DBConfiguration dbConf = new DBConfiguration(conf);
     job.setInputFormatClass(TeradataInputFormat.class);
     numMappers = mappersNum;
-    job.getConfiguration().set("input.table.name", tableName);
-    job.getConfiguration().set("temporary.table.name", intermediateTableName);
+    job.getConfiguration().set(TeradataConstants.INPUT_TABLE_NAME, tableName);
+    job.getConfiguration().set(TeradataConstants.TEMP_TABLE_NAME,
+        intermediateTableName);
     tempTableGenerator = new TemporaryTableGenerator(tableName,
-        intermediateTableName, dbConf.getConnection(), colNames, numMappers);
+        intermediateTableName, dbConf, colNames, numMappers);
     tempTableGenerator.createImportTempTable();
     tempTableGenerator.populateImportTempTable();
     // Generate a parameterized query for map tasks
-    job.getConfiguration().set("parameterized.sql.query",
+    job.getConfiguration().set(TeradataConstants.PARAMETRIZED_QUERY,
         tempTableGenerator.getParameterizedQuery());
   }
 
@@ -104,8 +107,10 @@ public class TeradataInputFormat<T extends DBWritable> extends
    *          the table name
    * @return
    */
-  private static String getIntermediateTableName(String tableName, Configuration conf) {
-    return tableName + conf.get("teradata.import.table_suffix", "_temp");
+  private static String getIntermediateTableName(String tableName,
+      Configuration conf) {
+    return tableName
+        + conf.get(TeradataConstants.IMPORT_TEMP_TABLE_SUFFIX, "_temp");
   }
 
 }

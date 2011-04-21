@@ -1,1 +1,1 @@
-// (c) Copyright 2010 Cloudera, Inc. All Rights Reserved.
+^// \(c\) Copyright \d\d\d\d Cloudera, Inc\. All Rights Reserved\.$

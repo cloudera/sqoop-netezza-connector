@@ -3,7 +3,6 @@
 package com.cloudera.sqoop.teradata.exports;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +15,7 @@ import com.cloudera.sqoop.lib.SqoopRecord;
 import com.cloudera.sqoop.mapreduce.ExportOutputFormat;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.teradata.util.TemporaryTableGenerator;
+import com.cloudera.sqoop.teradata.util.TeradataConstants;
 
 /**
  * An ExportOutputFormat that provides a Teradata-specific RecordWriter and
@@ -54,7 +54,7 @@ public class TeradataOutputFormat<K extends SqoopRecord, V> extends
     private DBConfiguration dbConf;
 
     public TeradataRecordWriter(TaskAttemptContext context)
-        throws ClassNotFoundException, SQLException, IOException {
+        throws Exception {
       super(context);
       Configuration conf = getConf();
 
@@ -64,29 +64,29 @@ public class TeradataOutputFormat<K extends SqoopRecord, V> extends
       TemporaryTableGenerator temporaryTableGenerator =
         new TemporaryTableGenerator(
           dbConf.getOutputTableName(), dbConf.getOutputTableName()
-              + conf.get("teradata.export.tables_suffix", "_temp_")
-              + conf.getInt("mapred.task.partition", 0), dbConf
-              .getConnection(), null, 0);
+              + conf.get(TeradataConstants.EXPORT_TEMP_TABLES_SUFFIX, "_temp_")
+              + conf.getInt("mapred.task.partition", 0), dbConf, null, 0);
       temporaryTableGenerator.createExportTempTable();
     }
 
     @Override
     protected String getInsertStatement(int numRows) {
-
-      if (this.getConf().getBoolean("multi.insert.statements", false) == true) {
+      if (getConf().getBoolean(TeradataConstants.MULTI_INSERT_STATEMENTS,
+          false)) {
         return getInsertMultiStatements(numRows);
       } else {
         return super.getInsertStatement(numRows);
       }
-
     }
 
     protected String getInsertMultiStatements(int numRows) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < numRows; i++) {
-        sb.append("INSERT into " + dbConf.getOutputTableName()
-            + getConf().get("teradata.export.tables_suffix", "_temp_")
-            + getConf().getInt("mapred.task.partition", 0) + " (");
+        sb.append("INSERT into "
+            + dbConf.getOutputTableName()
+            + getConf().get(TeradataConstants.EXPORT_TEMP_TABLES_SUFFIX,
+                "_temp_") + getConf().getInt("mapred.task.partition", 0)
+            + " (");
         String delim = "";
         for (String columnName : getColumnNames()) {
           sb.append(delim);

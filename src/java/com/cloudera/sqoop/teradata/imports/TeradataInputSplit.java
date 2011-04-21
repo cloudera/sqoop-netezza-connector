@@ -8,13 +8,16 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
+/**
+ * A Teradata input split; a table partition to be read.
+ */
 public class TeradataInputSplit extends
     com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat.DBInputSplit
     implements Writable {
   private long partition = 0;
 
   /**
-   * Default constructor
+   * Default constructor.
    */
   public TeradataInputSplit() {
   }

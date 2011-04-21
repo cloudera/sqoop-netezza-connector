@@ -3,15 +3,17 @@
 package com.cloudera.sqoop.teradata.exports;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputCommitter;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.OutputCommitter;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.teradata.util.TDBQueryExecutor;
+import com.cloudera.sqoop.teradata.util.TeradataConstants;
 
 /**
  * An OutputCommitter that takes care of export job cleanup. It merges the
@@ -24,19 +26,8 @@ public class TeradataExportOutputCommitter extends OutputCommitter {
       .getLog(TeradataExportOutputCommitter.class.getName());
   private String tableName;
   private int numMappers;
-  private JobConf conf;
+  private Configuration conf;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.hadoop.mapred.OutputCommitter#abortTask(org.apache.hadoop.
-   * mapred .TaskAttemptContext)
-   */
-  @Override
-  public void abortTask(org.apache.hadoop.mapred.TaskAttemptContext arg0)
-      throws IOException {
-  }
 
   /*
    * (non-Javadoc)
@@ -46,53 +37,37 @@ public class TeradataExportOutputCommitter extends OutputCommitter {
    * .mapred.JobContext)
    */
   @Override
-  public void cleanupJob(org.apache.hadoop.mapred.JobContext context)
+  public void cleanupJob(JobContext context)
       throws IOException {
     LOG.debug("starting cleanupJob...");
-    conf = context.getJobConf();
+    conf = context.getConfiguration();
     DBConfiguration dbConf = new DBConfiguration(conf);
     tableName = dbConf.getOutputTableName();
     numMappers = Integer.valueOf(conf.get("mapred.map.tasks"));
-    TDBQueryExecutor queryExecutor = null;
-    try {
-      queryExecutor = new TDBQueryExecutor(dbConf.getConnection());
-    } catch (ClassNotFoundException cnfe) {
-      throw new IOException(cnfe);
-    } catch (SQLException se) {
-      throw new IOException(se);
-    }
+    TDBQueryExecutor queryExecutor = new TDBQueryExecutor(dbConf);
     String insertQuery = getInsertQuery();
     LOG.debug("Try executing insert query: " + insertQuery);
     int r = 0;
     try {
       r = queryExecutor.executeUpdate(insertQuery);
-    } catch (SQLException se) {
-      throw new IOException(se);
+    } catch (Exception e) {
+      throw new IOException(e);
     }
-    LOG.debug("Query executed, return=" + r);
-    try {
-      queryExecutor.close();
-    } catch (SQLException se) {
-      throw new IOException(se);
-    }
+    LOG.debug("Query executed, return = " + r);
 
-    if (conf.getBoolean("teradata.export.delete_temporary_tables", true)) {
+    if (conf.getBoolean(TeradataConstants.EXPORT_DELETE_TEMP_TABLES, true)) {
       for (int i = 0; i < numMappers; i++) {
-        String dropQuery = "DROP TABLE " + tableName + conf.get("teradata." +
-                          "export.tables_suffix", "_temp_") + i + ";";
+        String dropQuery = "DROP TABLE " + tableName
+            + conf.get(TeradataConstants.EXPORT_TEMP_TABLES_SUFFIX, "_temp_")
+            + i + ";";
         int r2 = 0;
         try {
           r2 = queryExecutor.executeUpdate(dropQuery);
-        } catch (SQLException se) {
-          throw new IOException(se);
+        } catch (Exception e) {
+          throw new IOException(e);
         }
-        LOG.debug("Query executed, return=" + r2);
+        LOG.debug("Query executed, return = " + r2);
       }
-    }
-    try {
-      queryExecutor.close();
-    } catch (SQLException se) {
-      throw new IOException(se);
     }
   }
 
@@ -106,60 +81,34 @@ public class TeradataExportOutputCommitter extends OutputCommitter {
     String delim = "";
     for (int i = 0; i < numMappers; i++) {
       sb.append(delim);
-      sb.append(" SELECT * FROM " + tableName + conf.get("teradata.export." +
-                "tables_suffix", "_temp_") + i);
+      sb.append(" SELECT * FROM " + tableName
+          + conf.get(TeradataConstants.EXPORT_TEMP_TABLES_SUFFIX, "_temp_")
+          + i);
       delim = " UNION ALL";
     }
     sb.append(";");
     return sb.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.hadoop.mapred.OutputCommitter#commitTask(org.apache.hadoop
-   * .mapred .TaskAttemptContext)
-   */
   @Override
-  public void commitTask(org.apache.hadoop.mapred.TaskAttemptContext arg0)
-      throws IOException {
+  public void abortTask(TaskAttemptContext arg0) throws IOException {
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.hadoop.mapred.OutputCommitter#needsTaskCommit(org.apache.hadoop
-   * .mapred.TaskAttemptContext)
-   */
   @Override
-  public boolean needsTaskCommit(
-      org.apache.hadoop.mapred.TaskAttemptContext arg0) throws IOException {
+  public void commitTask(TaskAttemptContext arg0) throws IOException {
+  }
+
+  @Override
+  public boolean needsTaskCommit(TaskAttemptContext arg0) throws IOException {
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.hadoop.mapred.OutputCommitter#setupJob(org.apache.hadoop.mapred
-   * .JobContext)
-   */
   @Override
-  public void setupJob(org.apache.hadoop.mapred.JobContext arg0)
-      throws IOException {
+  public void setupJob(JobContext arg0) throws IOException {
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.hadoop.mapred.OutputCommitter#setupTask(org.apache.hadoop.
-   * mapred .TaskAttemptContext)
-   */
   @Override
-  public void setupTask(org.apache.hadoop.mapred.TaskAttemptContext arg0)
-      throws IOException {
+  public void setupTask(TaskAttemptContext arg0) throws IOException {
   }
+
 }

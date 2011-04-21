@@ -99,7 +99,6 @@ public class TestTeradataExport extends TestCase {
     } catch (Exception e) {
       fail("Exception during setup: " + e);
     }
-
   }
 
   /*

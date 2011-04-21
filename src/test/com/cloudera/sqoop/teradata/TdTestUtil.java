@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,7 +17,6 @@ import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.EnterpriseManagerFactory;
 import com.cloudera.sqoop.metastore.JobData;
-import com.cloudera.sqoop.teradata.util.TDBQueryExecutor;
 import com.cloudera.sqoop.tool.ImportTool;
 
 /**
@@ -27,17 +27,26 @@ public class TdTestUtil {
   private static final Log LOG = LogFactory
       .getLog(TdTestUtil.class.getName());
 
+  protected TdTestUtil(){
+    // prevents calls from subclass
+    throw new UnsupportedOperationException();
+  }
+
   /** Hostname in /etc/hosts for the Teradata test database. */
-  public static final String TERADATA_HOST = System.getProperty("sqoop.teradata.host","td_host");
-  
+  public static final String TERADATA_HOST = System.getProperty(
+      "sqoop.teradata.host", "td_host");
+
   /** DB schema to use on the host. */
-  public static final String TERADATA_DB = System.getProperty("sqoop.teradata.database","td_database");
+  public static final String TERADATA_DB = System.getProperty(
+      "sqoop.teradata.database", "td_database");
 
   /** Teradata DB username. */
-  public static final String TERADATA_USER = System.getProperty("sqoop.teradata.user","td_user");
+  public static final String TERADATA_USER = System.getProperty(
+      "sqoop.teradata.user", "td_user");
 
   /** Teradata DB password. */
-  public static final String TERADATA_PASS = System.getProperty("sqoop.teradata.password","td_password");
+  public static final String TERADATA_PASS = System.getProperty(
+      "sqoop.teradata.password", "td_password");
 
   private static final String SPLITBY_COLUMN = "col0";
 
@@ -94,20 +103,39 @@ public class TdTestUtil {
    * @throws SQLException 
    * @throws ClassNotFoundException 
    */
-  public static void dropTableIfExists(String tableName) throws IOException, ClassNotFoundException, SQLException {
+  public static void dropTableIfExists(String tableName) throws IOException,
+      ClassNotFoundException, SQLException {
     Connection connection = null;
-    Class.forName("com.teradata.jdbc.TeraDriver");
-    connection = DriverManager
-    .getConnection(getConnectString(), TERADATA_USER, TERADATA_PASS);
-    connection.setAutoCommit(false);
-    TDBQueryExecutor queryExecutor = new TDBQueryExecutor(connection);
+    Statement statement = null;
+    String queryString = "DROP TABLE " + tableName;
     try {
-      queryExecutor.executeUpdate("DROP TABLE " + tableName);
-    } catch (SQLException e) {
-      // Do nothing because the table does not exist.
+      Class.forName("com.teradata.jdbc.TeraDriver");
+      connection = DriverManager
+      .getConnection(getConnectString(), TERADATA_USER, TERADATA_PASS);
+      connection.setAutoCommit(false);
+      statement = connection.createStatement();
+      LOG.debug("Trying to execute query: " + queryString);
+      statement.executeUpdate(queryString);
+      connection.commit();
+    } catch (Exception e) {
+      try {
+        connection.rollback();
+      } catch (SQLException e1) {
+        LOG.debug(e.getMessage(), e);
+      }
       LOG.debug("Drop table exception ignored: " + e);
+    } finally {
+      try {
+        if (statement != null) {
+          statement.close();
+        }
+        if (connection != null) {
+          connection.close();
+        }
+      } catch (SQLException e) {
+        LOG.debug(e.getMessage(), e);
+      }
     }
-    queryExecutor.close();
   }
 
 }

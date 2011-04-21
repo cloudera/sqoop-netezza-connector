@@ -283,6 +283,12 @@
       <!-- enable asserts in tests -->
       <jvmarg value="-ea" />
 
+      <!-- Teradata test database connection arguments -->
+      <jvmarg value="-Dsqoop.teradata.host=${sqoop.teradata.host}"/>
+      <jvmarg value="-Dsqoop.teradata.database=${sqoop.teradata.database}"/>
+      <jvmarg value="-Dsqoop.teradata.user=${sqoop.teradata.user}"/>
+      <jvmarg value="-Dsqoop.teradata.password=${sqoop.teradata.password}"/>
+
       <!-- uncomment this if you want to attach a debugger -->
       <!--
       <jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=2601" />

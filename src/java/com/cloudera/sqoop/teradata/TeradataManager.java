@@ -3,7 +3,6 @@
 package com.cloudera.sqoop.teradata;
 
 import java.io.IOException;
-import java.sql.Connection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,6 +11,7 @@ import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.manager.ExportJobContext;
 import com.cloudera.sqoop.manager.GenericJdbcManager;
 import com.cloudera.sqoop.manager.ImportJobContext;
+import com.cloudera.sqoop.teradata.util.TeradataConstants;
 import com.cloudera.sqoop.util.ExportException;
 import com.cloudera.sqoop.util.ImportException;
 
@@ -36,16 +36,6 @@ public class TeradataManager extends GenericJdbcManager {
   /*
    * (non-Javadoc)
    *
-   * @see com.cloudera.sqoop.manager.SqlManager#getMetadataIsolationLevel()
-   */
-  @Override
-  protected int getMetadataIsolationLevel() {
-    return Connection.TRANSACTION_READ_COMMITTED;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
    * @see
    * com.cloudera.sqoop.manager.SqlManager#exportTable(com.cloudera.sqoop.
    * manager .ExportJobContext)
@@ -55,7 +45,7 @@ public class TeradataManager extends GenericJdbcManager {
       ExportException {
     context.setConnManager(this);
     context.getOptions().getConf()
-        .setBoolean("multi.insert.statements", true);
+        .setBoolean(TeradataConstants.MULTI_INSERT_STATEMENTS, true);
     super.exportTable(context);
   }
 

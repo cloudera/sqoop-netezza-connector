@@ -2,12 +2,10 @@
 
 package com.cloudera.sqoop.teradata.util;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 
 /**
  * Manages temporary table(s) for TD import and export. Encapsulates the logic
@@ -24,7 +22,7 @@ public class TemporaryTableGenerator {
   private String[] colNames;
   private int mapperNum;
   private TDBQueryExecutor queryExecutor;
-  private Connection connection;
+  private DBConfiguration dbConf;
 
   /**
    * @param conf
@@ -37,38 +35,39 @@ public class TemporaryTableGenerator {
    * @param mapperNum
    */
   public TemporaryTableGenerator(String tableName, String tempTableName,
-      Connection connection, String[] colNames, int mapperNum) {
+      DBConfiguration dbConfiguration, String[] columnNames, int mapperNum) {
     this.tableName = tableName;
     this.tempTableName = tempTableName;
-    this.connection = connection;
-    this.colNames = colNames;
+    this.dbConf = dbConfiguration;
+    if (null != columnNames) {
+      colNames = new String[columnNames.length];
+      System.arraycopy(columnNames, 0, colNames, 0, columnNames.length);
+    }
     this.mapperNum = mapperNum;
   }
 
-  public int createExportTempTable() throws IOException, SQLException {
-    queryExecutor = new TDBQueryExecutor(connection);
+  public int createExportTempTable() throws Exception {
+    queryExecutor = new TDBQueryExecutor(dbConf);
     // Drop the table if it exists
     try {
       queryExecutor.executeUpdate("DROP TABLE " + this.tempTableName);
-    } catch (SQLException se) {
+    } catch (Exception se) {
       // Do nothing because the table likely does not exist yet!
       LOG.debug("Drop table exception ignored: " + se);
     }
     String createTableQuery = "CREATE TABLE " + this.tempTableName + " as "
         + this.tableName + " WITH NO DATA";
-    int r = 0;
-    r = queryExecutor.executeUpdate(createTableQuery);
+    int r = queryExecutor.executeUpdate(createTableQuery);
     LOG.debug("Query executed, return=" + r);
-    queryExecutor.close();
     return r;
   }
 
-  public void createImportTempTable() throws IOException, SQLException {
-    queryExecutor = new TDBQueryExecutor(connection);
+  public void createImportTempTable() throws Exception {
+    queryExecutor = new TDBQueryExecutor(dbConf);
     // Drop the table if it exists
     try {
       queryExecutor.executeUpdate("DROP TABLE " + this.tempTableName);
-    } catch (SQLException se) {
+    } catch (Exception se) {
       // Do nothing because the table likely does not exist yet!
       LOG.debug("Drop table exception ignored: " + se);
     }
@@ -77,24 +76,23 @@ public class TemporaryTableGenerator {
         + this.tableName + " WITH NO DATA";
     queryExecutor.executeUpdate(createTableQuery);
     // Add the index column to the created table
-    String addIndxColumnQuery = "ALTER TABLE " + this.tempTableName
-        + " ADD index_column INTEGER";
+    String addIndxColumnQuery = "ALTER TABLE " + this.tempTableName + " ADD "
+        + TeradataConstants.INDEX_COLUMN + " INTEGER";
     queryExecutor.executeUpdate(addIndxColumnQuery);
     // Modify primary index and partitioning information
-    String pIndxQuery = "ALTER TABLE "
-        + this.tempTableName
-        + " MODIFY PRIMARY INDEX( index_column ) PARTITION BY RANGE_N( CAST( "
-        + "( index_column MOD " + this.mapperNum + " ) AS INTEGER ) BETWEEN "
-        + "0 AND " + (this.mapperNum - 1) + " EACH 1 )";
+    String pIndxQuery = "ALTER TABLE " + this.tempTableName
+        + " MODIFY NOT UNIQUE PRIMARY INDEX( "
+        + TeradataConstants.INDEX_COLUMN + " ) PARTITION BY RANGE_N( CAST( "
+        + "( " + TeradataConstants.INDEX_COLUMN + " MOD " + this.mapperNum
+        + " ) AS INTEGER ) BETWEEN " + "0 AND " + (this.mapperNum - 1)
+        + " EACH 1 )";
     queryExecutor.executeUpdate(pIndxQuery);
-    queryExecutor.close();
   }
 
-  public int populateImportTempTable() throws SQLException, IOException {
-    queryExecutor = new TDBQueryExecutor(connection);
+  public int populateImportTempTable() throws Exception {
+    queryExecutor = new TDBQueryExecutor(dbConf);
     String insertQuery = getInsertQuery();
     int r = queryExecutor.executeUpdate(insertQuery);
-    queryExecutor.close();
     return r;
   }
 
@@ -107,8 +105,9 @@ public class TemporaryTableGenerator {
     for (String colName : colNames) {
       sb.append(colName + ", ");
     }
-    sb.append("random(0," + (this.mapperNum - 1) + ") as index_column from "
-        + this.tableName);
+    sb.append("random(0," + (this.mapperNum - 1) + ") as "
+        + TeradataConstants.INDEX_COLUMN + " from " + this.tableName);
+    LOG.debug("Insert query:" + sb.toString());
     return sb.toString();
   }
 
@@ -124,7 +123,8 @@ public class TemporaryTableGenerator {
       sb.append(colName);
       delim = ", ";
     }
-    sb.append(" FROM " + this.tempTableName + " WHERE index_column = %N%");
+    sb.append(" FROM " + this.tempTableName + " WHERE "
+        + TeradataConstants.INDEX_COLUMN + " = %N%");
     return sb.toString();
   }
 

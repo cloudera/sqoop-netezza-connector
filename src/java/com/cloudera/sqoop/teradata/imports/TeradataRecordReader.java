@@ -6,13 +6,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.lib.db.DBWritable;
 
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.mapreduce.db.DataDrivenDBRecordReader;
+import com.cloudera.sqoop.teradata.util.TeradataConstants;
 
-public class TeradataRecordReader<LongWritable, T> extends
-    DataDrivenDBRecordReader {
+/**
+ * A Teradata record reader to read input splits (partitions). 
+ */
+public class TeradataRecordReader<T extends DBWritable> extends
+    DataDrivenDBRecordReader<T> {
 
+  // CHECKSTYLE:OFF
+  // TODO: The DataDrivenDBRecordReader constructor need to be refactored.
   /**
    * @param split
    * @param inputClass
@@ -35,14 +42,15 @@ public class TeradataRecordReader<LongWritable, T> extends
 
   /*
    * (non-Javadoc)
-   *
+   * 
    * @see
    * com.cloudera.sqoop.mapreduce.db.DataDrivenDBRecordReader#getSelectQuery()
    */
   @Override
   protected String getSelectQuery() {
     int partitionNum = getConf().getInt("mapred.task.partition", 0);
-    String parametrizedQuery = getConf().get("parameterized.sql.query");
+    String parametrizedQuery = getConf().get(
+        TeradataConstants.PARAMETRIZED_QUERY);
     String query = parametrizedQuery.replace("%N%", String
         .valueOf(partitionNum));
     return query;

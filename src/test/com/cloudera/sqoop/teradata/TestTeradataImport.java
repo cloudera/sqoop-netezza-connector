@@ -11,11 +11,14 @@ import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -24,7 +27,6 @@ import org.apache.hadoop.fs.Path;
 import com.cloudera.sqoop.Sqoop;
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.manager.ConnManager;
-import com.cloudera.sqoop.teradata.util.TDBQueryExecutor;
 import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.tool.SqoopTool;
 
@@ -37,6 +39,8 @@ public class TestTeradataImport extends TestCase {
   protected SqoopOptions options;
   protected ConnManager manager;
   protected Connection conn;
+  private static final Log LOG = LogFactory
+  .getLog(TdTestUtil.class.getName());
 
   /*
    * (non-Javadoc)
@@ -103,12 +107,10 @@ public class TestTeradataImport extends TestCase {
   /**
    * @param tableName
    * @param colTypes
-   * @throws SQLException
-   * @throws IOException
-   * @throws ClassNotFoundException 
+   * @throws Exception 
    */
   protected void createTable(String tableName, String... colTypes)
-      throws SQLException, IOException, ClassNotFoundException {
+      throws Exception {
     if (null == colTypes || colTypes.length == 0) {
       throw new SQLException("must have at least one column");
     }
@@ -129,13 +131,35 @@ public class TestTeradataImport extends TestCase {
     }
     sb.append(" )");
     Connection connection = null;
-    Class.forName("com.teradata.jdbc.TeraDriver");
-    connection = DriverManager.getConnection(TdTestUtil.getConnectString(),
-        TdTestUtil.TERADATA_USER, TdTestUtil.TERADATA_PASS);
-    connection.setAutoCommit(false);
-    TDBQueryExecutor queryExecutor = new TDBQueryExecutor(connection);
-    queryExecutor.executeUpdate(sb.toString());
-    queryExecutor.close();
+    Statement statement = null;
+    try {
+      Class.forName("com.teradata.jdbc.TeraDriver");
+      connection = DriverManager.getConnection(TdTestUtil.getConnectString(),
+          TdTestUtil.TERADATA_USER, TdTestUtil.TERADATA_PASS);
+      connection.setAutoCommit(false);
+      statement = connection.createStatement();
+      LOG.debug("Trying to execute query: " + sb.toString());
+      statement.executeQuery(sb.toString());
+      connection.commit();
+    } catch (Exception e) {
+      try {
+        connection.rollback();
+      } catch (SQLException e1) {
+        LOG.debug(e.getMessage(), e);
+      }
+      throw e;
+    } finally {
+      try {
+        if (statement != null) {
+          statement.close();
+        }
+        if (connection != null) {
+          connection.close();
+        }
+      } catch (SQLException e) {
+        LOG.debug(e.getMessage(), e);
+      }
+    }
   }
 
   /**

@@ -13,6 +13,7 @@ import com.cloudera.sqoop.manager.ImportJobContext;
 import com.cloudera.sqoop.teradata.exports.TeradataExportJob;
 import com.cloudera.sqoop.teradata.imports.TeradataImportJob;
 import com.cloudera.sqoop.teradata.imports.TeradataInputFormat;
+import com.cloudera.sqoop.teradata.util.TeradataConstants;
 import com.cloudera.sqoop.util.ExportException;
 import com.cloudera.sqoop.util.ImportException;
 
@@ -44,10 +45,10 @@ public class DirectTeradataManager extends TeradataManager {
   public void exportTable(ExportJobContext context) throws IOException,
       ExportException {
     context.setConnManager(this);
-    context.getOptions().getConf().set("mapred.output.committer.class",
-        "com.cloudera.sqoop.teradata.exports.TeradataExportOutputCommitter");
+//    context.getOptions().getConf().set("mapred.output.committer.class",
+//        "com.cloudera.sqoop.teradata.exports.TeradataExportOutputCommitter");
     context.getOptions().getConf()
-        .setBoolean("multi.insert.statements", true);
+        .setBoolean(TeradataConstants.MULTI_INSERT_STATEMENTS, true);
     TeradataExportJob exportJob = new TeradataExportJob(context);
     exportJob.runExport();
   }
@@ -63,10 +64,9 @@ public class DirectTeradataManager extends TeradataManager {
   public void importTable(ImportJobContext context) throws IOException,
       ImportException {
     context.setConnManager(this);
-    options.getConf().set("mapred.output.committer.class",
-        "com.cloudera.sqoop.teradata.imports.TeradataImportOutputCommitter");
-    TeradataImportJob importer = null;
-    importer = new TeradataImportJob(context.getOptions(),
+//    context.getOptions().getConf().set("mapred.output.committer.class",
+//        "com.cloudera.sqoop.teradata.imports.TeradataImportOutputCommitter");
+    TeradataImportJob importer = new TeradataImportJob(context.getOptions(),
         TeradataInputFormat.class, context);
     LOG.info("Beginning Teradata import");
 
@@ -79,17 +79,8 @@ public class DirectTeradataManager extends TeradataManager {
     }
 
     String tableName = context.getTableName();
-    SqoopOptions opts = context.getOptions();
-
-    // check that the partition column is set correctly.
-    String partitionCol = getSplitColumn(opts, tableName);
-    if (null == partitionCol && opts.getNumMappers() > 1) {
-      throw new ImportException("No primary key found for table " + tableName
-          + ", please specify one with --split-by or perform "
-          + "a sequential import with '-m 1'.");
-    }
 
     importer.runImport(tableName, context.getJarFile(),
-        partitionCol, options.getConf());
+        null, context.getOptions().getConf());
   }
 }
