@@ -5,21 +5,20 @@ package com.cloudera.sqoop.netezza;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.netezza.TestNetezzaJdbcExport.Checker;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+
+import com.cloudera.sqoop.SqoopOptions;
 
 /**
  * Test exports over FIFO to Netezza.
  */
 public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
 
-  public static final Log LOG = LogFactory.getLog(
-        TestNetezzaDirectExport.class.getName());
+  public static final Log LOG = LogFactory.getLog(TestNetezzaDirectExport.class
+      .getName());
 
   protected String getTablePrefix() {
     return "NZ_DIRECT_TBL_";
@@ -46,6 +45,23 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
       }
     });
   }
+
+  public void testTruncString() throws Exception {
+    // Write a field that is longer than the varchar len. verify that it is
+    // truncated.
+
+    SqoopOptions options = getSqoopOptions();
+    options.setInputFieldsTerminatedBy('|');
+    Configuration conf = options.getConf();
+
+    createTableForType("VARCHAR(8)");
+    Path p = new Path(getBasePath(), "toolong.txt");
+    writeFileWithLine(conf, p, "1|this string is too long");
+    runExport(options, p);
+    checkValForId(1, new Checker() {
+      public void check(ResultSet rs) throws SQLException {
+        assertEquals("this str", rs.getString(1));
+      }
+    });
+  }
 }
-
-
