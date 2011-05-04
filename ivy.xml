@@ -4,7 +4,9 @@
    (c) Copyright 2010 Cloudera, Inc. All Rights Reserved.
 -->
 
-<ivy-module version="1.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
   <info organisation="com.cloudera.sqoop" module="${name}">
     <license name="Apache 2.0"/>
     <ivyauthor name="Sqoop Team" url="http://github.com/cloudera/sqoop" />
@@ -44,9 +46,9 @@
   </publications>
   <dependencies>
     <!-- Dependencies for Cloudera's Distribution for Hadoop -->
-    <dependency org="com.cloudera.hadoop" name="hadoop-core"
+    <dependency org="org.apache.hadoop" name="hadoop-core"
       rev="${hadoop-core.cloudera.version}" conf="common->default"/>
-    <dependency org="com.cloudera.hadoop" name="hadoop-test"
+    <dependency org="org.apache.hadoop" name="hadoop-test"
       rev="${hadoop-core.cloudera.version}" conf="test->default"/>
 
     <!-- Common dependencies for Sqoop -->
@@ -58,17 +60,26 @@
       conf="common->master" />
     <dependency org="junit" name="junit" rev="${junit.version}"
       conf="common->default"/>
+    <dependency org="commons-io" name="commons-io" rev="${commons-io.version}"
+      conf="common->default;redist->default"/>
     
     <!-- dependencies for static analysis -->
     <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"
       conf="checkstyle->default" />
 
-    <!-- dependencies on Sqoop and its Cloudera-Hadoop shim. -->
+    <!-- dependencies on Sqoop -->
     <dependency org="com.cloudera.sqoop" name="sqoop"
-      rev="${sqoop.version}" conf="common->default" />
-    <dependency org="com.cloudera.sqoop" name="sqoop-shim-cloudera"
-      rev="${sqoop.version}" conf="common->default" />
-    <dependency org="com.cloudera.sqoop" name="sqoop-test"
-      rev="${sqoop.version}" conf="test->default" />
+      rev="${sqoop.version}" conf="common->default">
+       <exclude org="com.sun.jersey" module="jersey-core"/>
+       <exclude org="com.sun.jersey" module="jersey-json"/>
+       <exclude org="com.sun.jersey" module="jersey-server"/>
+       <exclude org="org.apache.thrift" module="thrift"/>
+       <exclude org="log4j" module="log4j"/>
+    </dependency>
+    <dependency org="com.cloudera.sqoop" name="sqoop"
+       rev="${sqoop.version}" conf="test->default">
+        <artifact name="sqoop" type="test-jar" ext="jar" m:classifier="tests"/>
+    </dependency>
+
   </dependencies>
 </ivy-module>

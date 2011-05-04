@@ -22,7 +22,7 @@
       value="https://repository.apache.org/content/repositories/snapshots/"
       override="false"/>
   <property name="releases.cloudera.com"
-      value="https://repository.cloudera.com/content/repositories/releases/"
+      value="https://repository.cloudera.com/content/groups/cdh-releases-rcs/"
       override="false"/>
   <property name="maven2.pattern"
       value="[organisation]/[module]/[revision]/[module]-[revision]"/>

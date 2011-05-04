@@ -112,7 +112,7 @@
 
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern"
-    			value="${name}/[conf]/[artifact]-[revision].[ext]"/>
+             value="${name}/[conf]/[artifact]-[revision](-[classifier]).[ext]"/>
 
   <!-- load ant-contrib tasks to get the "if" task. -->
   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
