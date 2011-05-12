@@ -23,6 +23,20 @@ public class TestDirectTeradataExport extends TestTeradataExport {
   }
 
   /* (non-Javadoc)
+   * @see com.cloudera.sqoop.teradata.TestTeradataExport#getTableSuffix()
+   */
+  protected String getTableSuffix() {
+    // Should return an empty string, returning "_temp_0" to compare
+    // against the temporary output table before merging. This should be
+    // corrected after MAPREDUCE-2350 is resolved.
+    if(TdTestUtil.TERADATA_EXPORT_TEMP_TABLE.equals("true")){
+        return "_temp_0";
+    } else {
+        return super.getTableSuffix();
+    }
+  }
+
+  /* (non-Javadoc)
    * @see com.cloudera.sqoop.teradata.TestTeradataExport#getSqoopOptions()
    */
   protected SqoopOptions getSqoopOptions() {

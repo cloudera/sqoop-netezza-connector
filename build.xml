@@ -288,6 +288,7 @@
       <jvmarg value="-Dsqoop.teradata.database=${sqoop.teradata.database}"/>
       <jvmarg value="-Dsqoop.teradata.user=${sqoop.teradata.user}"/>
       <jvmarg value="-Dsqoop.teradata.password=${sqoop.teradata.password}"/>
+      <jvmarg value="-Dsqoop.teradata.export.temp_table=${sqoop.teradata.export.temp_table}"/>
 
       <!-- uncomment this if you want to attach a debugger -->
       <!--

@@ -62,6 +62,13 @@ public class TestTeradataExport extends TestCase {
   }
 
   /**
+   * @return the table suffix
+   */
+  protected String getTableSuffix() {
+    return "";
+  }
+
+  /**
    * @return the table name
    */
   protected String getTableName() {
@@ -192,7 +199,7 @@ public class TestTeradataExport extends TestCase {
     PreparedStatement ps = null;
     ResultSet rs = null;
     try {
-      ps = c.prepareStatement("SELECT val FROM " + getTableName()
+      ps = c.prepareStatement("SELECT val FROM " + getOutputTableName()
           + " WHERE id = ?");
       ps.setInt(1, id);
       rs = ps.executeQuery();
@@ -219,6 +226,13 @@ public class TestTeradataExport extends TestCase {
         }
       }
     }
+  }
+
+  /**
+   * @return the output table name
+   */
+  private String getOutputTableName() {
+    return getTableName() + getTableSuffix();
   }
 
   /**

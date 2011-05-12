@@ -48,6 +48,15 @@ public class TdTestUtil {
   public static final String TERADATA_PASS = System.getProperty(
       "sqoop.teradata.password", "td_password");
 
+  /**
+   * A property that determines, in the direct export use case, if results are
+   * to be compared to the temporary table before merging or to the final output
+   * table. This property is required to be set to "true" during testing because
+   * of a Hadoop issue MAPREDUCE-2350.
+   */
+  public static final String TERADATA_EXPORT_TEMP_TABLE = System.getProperty(
+      "sqoop.teradata.export.temp_table", "false");
+
   private static final String SPLITBY_COLUMN = "col0";
 
   /**
