@@ -1,6 +1,6 @@
 
 
-To configure sqoop 1.1.0 to use the sqoop-connectors library:
+To configure sqoop 1.2.0 to use the sqoop-connectors library:
 
 1) Register the new ConnectionManager with Sqoop in its configuration.
 
@@ -18,13 +18,14 @@ need to specify a path. The file can simply contain the line:
 com.cloudera.sqoop.manager.EnterpriseManagerFactory
 
 
-2) Place any additional JDBC drivers (e.g., nzjdbc3.jar for Netezza) in
+2) Place any additional JDBC drivers (e.g., nzjdbc3.jar for Netezza,
+terajdbc4.jar and tdgssconfig.jar for Teradata) in
 $SQOOP_HOME/lib (/usr/lib/sqoop/lib/).
 
 2a) If you can't/don't want to do this, you can always specify them on the
 command line with "HADOOP_CLASSPATH=/path/to/nzjdbc3.jar sqoop import ..."
 
-3) The normal Sqoop interface should now work with your EDW. Try:
+3) The normal Sqoop interface should now work with your EDW. Try for example:
 
   $ sqoop import --connect jdbc:netezza://nzhost/nzdb --username ...
 

@@ -21,7 +21,7 @@ Introduction
 ------------
 
 Sqoop connectors are standard Sqoop extensions that allow Sqoop to
-operate with specialized enterprise systems such as Netezza. After
+operate with specialized enterprise systems such as Netezza or Teradata. After
 installation, these connectors allow various Sqoop tools such as
 +sqoop-import+ and +sqoop-export+ to operate directly with these
 enterprise systems.

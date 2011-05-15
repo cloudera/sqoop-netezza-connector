@@ -27,7 +27,7 @@ all connectors. Note the path to this jar file. For example,
 +/usr/lib/sqoop-connectors-{revnumber}/sqoop-connectors-{revnumber}.jar+.
 
 Next, create a text file called +connectors+ in a directory named
-+managers.d+ within the configuration directory of Sqoop.  Create
++managers.d+ within the configuration directory of Sqoop. Create
 the directory +managers.d+ if it does not exist.
 
 NOTE: Depending on how Sqoop is installed, its configuration
