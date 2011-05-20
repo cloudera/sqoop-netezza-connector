@@ -17,7 +17,7 @@
   <property environment="env"/>
   <property name="name" value="sqoop-connectors" />
   <property name="Name" value="SqoopConnectors" />
-  <property name="version" value="1.0-beta-u2" />
+  <property name="version" value="1.0-beta-u3-SNAPSHOT" />
   <property name="artifact.name" value="${name}-${version}" />
   <property name="dest.jar" value="${artifact.name}.jar" />
   <property name="git.hash" value="" />
