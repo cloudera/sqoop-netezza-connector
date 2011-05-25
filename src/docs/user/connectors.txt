@@ -19,13 +19,9 @@
 Available Connectors
 --------------------
 
-This release of Sqoop Connectors provides:
-
-The connector for Netezza Database System via Netezza JDBC Version 5.0 drivers.
-This connector is formally known as the Cloudera connector for Netezza.
-
-The connector for Teradata Database System via Teradata JDBC Driver 13.10.00.10.
-This connector is formally known as the Cloudera connector for Teradata.
+This release of Sqoop Connectors provides the connector for Netezza Database
+System via Netezza JDBC Version 5.0 drivers. This connector is formally known
+as the Cloudera connector for Netezza.
 
 Cloudera Connector for Netezza
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,55 +78,3 @@ IMPORTANT: The Cloudera Connector for Netezza does not support the specification
 +\--input-enclosed-by+ or +\--input-lines-terminated-by+ options. Both of these
 settings when specified during an export operation will be ignored. Also, the only
 supported escape character is the back-slash (+\+) character.
-
-Cloudera Connector for Teradata
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Cloudera connector for Teradata provided with this release of Sqoop Connectors
-is designed to use Teradata's FastLoad and FastExport JDBC capabilities.
-
-Installation and Removal
-^^^^^^^^^^^^^^^^^^^^^^^^
-To ensure that Cloudera connector for Teradata can be used, copy the Teradata JDBC
-drivers (terajdbc4.jar and tdgssconfig.jar) to the +lib+ directory of Sqoop
-installation. These drivers may be obtained from the Teradata dowload website
-http://downloads.teradata.com/download/connectivity/jdbc-driver. Without this driver,
-the connector will not function correctly.
-
-If you are uninstalling the Sqoop connector, you should also remove the JDBC
-drivers for Teradata that you copied to the +lib+ directory of Sqoop installation
-because Sqoop will no longer need it.
-
-Using Cloudera Connector for Teradata
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-After Sqoop connectors have been installed and the necessary JDBC drivers for
-Teradata has been copied to the +lib+ directory of Sqoop installation, you can use
-this connector by invoking the Sqoop tools with the appropriate connection
-string. The Cloudera connector for Teradata will be used by Sqoop only if the
-connection string being used is of the form
-+jdbc:teradata://<td-host>/<td-instance>/TYPE=<type>+ where +<td-host>+
-is the host name of the machine where Teradata server runs, +<td-instance>+
-is the Teradata database instance name and <type> is +FASTLOAD+ in the export
-use-case and +FASTEXPORT+ in the import use-case. Also, in order to effectively
-use the Teradata connector, you must specify the +\--direct+ option along with
-a number of mappers greater than one.
-
-
-For example, the following command invokes the Sqoop import tool with eight
-mappers and uses the Cloudera connector for Teradata.
-
-----
-$ sqoop import --connect jdbc:teradata://localhost/sqooptest --username sqooptest \
---password xxxxx --direct --table MY_TABLE --num-mappers 3 --escaped-by '\\' \
---fields-terminated-by ',' --lines-terminated-by '\n'
-----
-
-This command invokes the Sqoop export tool with three mappers and uses
-the Cloudera connector for Teradata.
-
-----
-$ sqoop export --connect jdbc:teradata://localhost/sqooptest --username sqooptest \
---password xxxxx --direct --export-dir /user/john/MY_TABLE --table MY_TABLE_TARGET \
---num-mappers 3 --input-escaped-by '\\' --input-fields-terminated-by ','
-----

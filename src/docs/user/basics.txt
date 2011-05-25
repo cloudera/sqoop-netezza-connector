@@ -21,13 +21,13 @@ Installing the Sqoop Connectors
 
 To install the Sqoop connectors, open the distribution archive
 in a convenient location such as +/usr/lib+. This will create a
-directory such as +/usr/lib/sqoop-connectors-{revnumber}+
+directory such as +/usr/lib/sqoop-nz-connector-{revnumber}+
 that contains the jar file of the compiled version of
 all connectors. Note the path to this jar file. For example,
-+/usr/lib/sqoop-connectors-{revnumber}/sqoop-connectors-{revnumber}.jar+.
++/usr/lib/sqoop-nz-connectors-{revnumber}/sqoop-nz-connectors-{revnumber}.jar+.
 
 Next, create a text file called +connectors+ in a directory named
-+managers.d+ within the configuration directory of Sqoop. Create
++managers.d+ within the configuration directory of Sqoop.  Create
 the directory +managers.d+ if it does not exist.
 
 NOTE: Depending on how Sqoop is installed, its configuration
@@ -39,10 +39,10 @@ complete path to the directory where the connector jar is located.
 For example:
 
 ----
-com.cloudera.sqoop.manager.EnterpriseManagerFactory=/usr/lib/sqoop-connectors-X.X/sqoop-connectors-X.X.jar
+com.cloudera.sqoop.manager.NetezzaManagerFactory=/usr/lib/nz-sqoop-connectors-X.X/nz-sqoop-connectors-X.X.jar
 ----
 
-The +EnterpriseManagerFactory+ acts as a single point of delegation
+The +NetezzaManagerFactory+ acts as a single point of delegation
 for invoking the applicable connector bundled with this distribution.
 However, in order to use a specific connector, there may be additional
 steps necessary to configure it. Refer to the connector-specific
