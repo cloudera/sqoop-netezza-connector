@@ -55,7 +55,6 @@ is the Netezza database instance name. Also, in order to effectively use the
 Netezza connector, you must specify the +\--direct+ option along with
 a number of mappers greater than one.
 
-
 For example, the following command invokes the Sqoop import tool with eight
 mappers and uses the Cloudera connector for Netezza.
 
@@ -73,6 +72,23 @@ $ sqoop export --connect jdbc:netezza://localhost/MYDB --username arvind \
 --password xxxxx --direct --export-dir /user/arvind/MY_TABLE --table MY_TABLE_TARGET \
 --num-mappers 8 --input-escaped-by '\\' --input-fields-terminated-by ','
 ----
+
+The direct mode Netezza connector supports a connector-specific
+Netezza export +\--maxerrors <n>+ argument.  This specifies the number
+of error records allowed on an import or export.  By default this is
+set to 1.  If the value is set to 0 the load will never abort.  This
+option is specified after all other arguments and specified after a
++\--+ argument.
+
+This example uses the --maxerrors connector-specific argument.
+
+----
+$ sqoop export --connect jdbc:netezza://localhost/MYDB --username arvind \
+--password xxxxx --direct --export-dir /user/arvind/MY_TABLE --table MY_TABLE_TARGET \
+--num-mappers 8 --input-escaped-by '\\' --input-fields-terminated-by ',' -- \
+--maxerrors 1
+----
+
 
 IMPORTANT: The Cloudera Connector for Netezza does not support the specification of
 +\--input-enclosed-by+ or +\--input-lines-terminated-by+ options. Both of these

@@ -30,6 +30,34 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     return options;
   }
 
+  /**
+   * This tests overriding a the Netezza specific MAXERRORS export argument.
+   * This is an extra argument specified using sqoop's "extra argument" args 
+   * that come after a "--" arg.
+   */
+  public void testMaxErrors() throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    options.setInputFieldsTerminatedBy('|');
+
+    // Although it would seem cleaner to do an options.setExtraArgs({...}) call
+    // here, this will not work because the Tool resets the value, instead we
+    // pass extra args to the runExport method, and let the Tool's parser handle
+    // it.
+
+    Configuration conf = options.getConf();
+    createTableForType("NUMERIC(12,4)");
+    Path p = new Path(getBasePath(), "inty.txt");
+    writeFileWithLine(conf, p, "1|3.1416");
+    String[] extraArgs = { "--", "--" + DirectNetezzaManager.NZ_MAXERRORS_ARG,
+        "2", };
+    runExport(options, p, extraArgs);
+    checkValForId(1, new Checker() {
+      public void check(ResultSet rs) throws SQLException {
+        assertEquals(3.1416f, rs.getFloat(1));
+      }
+    });
+  }
+
   public void testFloatExportWithSubstitutedFieldDelimiters() throws Exception {
     SqoopOptions options = getSqoopOptions();
     options.setInputFieldsTerminatedBy('|');
@@ -64,4 +92,5 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
       }
     });
   }
+
 }

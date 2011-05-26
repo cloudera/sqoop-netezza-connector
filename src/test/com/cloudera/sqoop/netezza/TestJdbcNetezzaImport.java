@@ -155,6 +155,12 @@ public class TestJdbcNetezzaImport extends TestCase {
 
   protected void runImport(SqoopOptions sqoopOptions, String tableName)
           throws Exception {
+    runImport(sqoopOptions, tableName, new String[0]);
+  }
+  
+  protected void runImport(SqoopOptions sqoopOptions, String tableName,
+      String[] extraArgs) throws Exception {
+
     sqoopOptions.setTableName(tableName);
 
     Path warehousePath = new Path(LOCAL_WAREHOUSE_DIR);
@@ -169,7 +175,7 @@ public class TestJdbcNetezzaImport extends TestCase {
 
     SqoopTool importTool = new ImportTool();
     Sqoop sqoop = new Sqoop(importTool, sqoopOptions.getConf(), sqoopOptions);
-    int ret = Sqoop.runSqoop(sqoop, new String[0]);
+    int ret = Sqoop.runSqoop(sqoop, extraArgs);
     if (0 != ret) {
       throw new Exception("Non-zero return from Sqoop: " + ret);
     }

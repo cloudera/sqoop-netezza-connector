@@ -112,6 +112,9 @@ public class NetezzaExportMapper<KEYIN, VALIN>
         sb.append("FORMAT 'text' ");
         sb.append("INCLUDEZEROSECONDS TRUE ");
         sb.append("NULLVALUE 'null' ");
+
+        int maxErrors = conf.getInt(DirectNetezzaManager.NZ_MAXERRORS_CONF, 1);
+        sb.append("MAXERRORS " + maxErrors + " ");
         sb.append(")");
 
         String sql = sb.toString();
@@ -252,4 +255,3 @@ public class NetezzaExportMapper<KEYIN, VALIN>
     this.exportStream.write(outputBytes, 0, outputBytes.length);
   }
 }
-

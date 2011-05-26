@@ -202,6 +202,11 @@ public class TestNetezzaJdbcExport extends TestCase {
   }
 
   protected void runExport(SqoopOptions options, Path p) throws Exception {
+    runExport(options, p, new String[0]);
+  }
+  
+  protected void runExport(SqoopOptions options, Path p, String[] sqoopArgs) 
+    throws Exception {
     options.setExplicitDelims(true);
     options.setExportDir(p.toString());
     options.setInputLinesTerminatedBy('\n');
@@ -213,7 +218,7 @@ public class TestNetezzaJdbcExport extends TestCase {
 
     SqoopTool exportTool = new ExportTool();
     Sqoop sqoop = new Sqoop(exportTool, options.getConf(), options);
-    int ret = Sqoop.runSqoop(sqoop, new String[0]);
+    int ret = Sqoop.runSqoop(sqoop, sqoopArgs);
     if (0 != ret) {
       fail("Non-zero return from Sqoop: " + ret);
     }

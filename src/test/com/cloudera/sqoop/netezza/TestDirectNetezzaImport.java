@@ -90,5 +90,25 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     verifyImportLine(TABLE_NAME, "1,foo");
     verifyImportLine(TABLE_NAME, "3,baz");
   }
+  
+  /**
+   * This tests overriding a the Netezza specific MAXERRORS export argument.
+   * This is an extra argument specified using sqoop's "extra argument" args
+   * that come after a "--" arg.
+   *
+   * This is essentially the same test as testRawComma
+   */
+  public void testMaxErrors() throws Exception {
+    // If you try to import un-escaped data in Netezza, the JDBC connection will
+    // hang. This tests that NetezzaImportJob sets the appropriate flag for us.
+    final String TABLE_NAME = "MAX_ERRORS";
+    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, TABLE_NAME, "1", "'meep,beep'");
+    String[] extraArgs = { "--", "--" + DirectNetezzaManager.NZ_MAXERRORS_ARG,
+        "2", };
+    runImport(options, TABLE_NAME, extraArgs);
+    verifyImportCount(TABLE_NAME, 1);
+    verifyImportLine(TABLE_NAME, "1,meep\\,beep");
+  }
 }
 
