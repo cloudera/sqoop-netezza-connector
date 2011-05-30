@@ -119,10 +119,10 @@ public class DirectNetezzaManager extends NetezzaManager {
   RelatedOptions getNZOptions() {
     // Connection args (common)
     RelatedOptions nzOpts = new RelatedOptions(
-        "Netezza Direct specific arguments");
+        "Netezza Connector specific arguments");
     nzOpts.addOption(OptionBuilder.withArgName(NZ_MAXERRORS_CONF).hasArg()
         .withDescription("Specify the maximum Netezza Connector "
-            +	"specific errors")
+            + "specific errors")
         .withLongOpt(NZ_MAXERRORS_ARG).create());
     return nzOpts;
   }
