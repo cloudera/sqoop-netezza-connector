@@ -27,19 +27,15 @@
   <property name="src.dir" location="${base.src.dir}/java" />
   <property name="test.dir" location="${base.src.dir}/test" />
   <property name="lib.dir" location="${basedir}/lib" />
-  <property name="docs.src.dir" location="${base.src.dir}/docs" />
 
   <property name="build.dir" location="${basedir}/build" />
   <property name="build.src.dir" location="${build.dir}/src" />
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.test" location="${build.dir}/test"/>
   <property name="build.test.classes" location="${build.test}/classes" />
-  <property name="build.javadoc" location="${build.dir}/docs/api" />
   <property name="test.log.dir" location="${build.dir}/test/logs"/>
   <property name="dist.dir" location="${build.dir}/${artifact.name}" />
   <property name="tar.file" location="${build.dir}/${artifact.name}.tar.gz" />
-  <property name="build.docs.timestamp"
-      location="${build.dir}/docs.timestamp" />
 
   <!-- compilation -->
   <property name="javac.deprecation" value="off"/>
@@ -204,7 +200,7 @@
       description="Compile all sources"/>
 
   <target name="package"
-      depends="jar,compile-all,docs,ivy-retrieve-redist"
+      depends="jar,compile-all,ivy-retrieve-redist"
       description="Create a redistributable package">
 
     <mkdir dir="${dist.dir}"/>
@@ -219,12 +215,6 @@
       </fileset>
     </copy>
 
-    <!-- copy in documentation build artifacts -->
-    <copy todir="${dist.dir}/docs" includeEmptyDirs="false" flatten="false">
-      <fileset dir="${build.dir}/docs">
-        <include name="**/*.*" />
-      </fileset>
-    </copy>
   </target>
 
   <target name="tar" depends="package" description="Create release tarball">
@@ -358,14 +348,6 @@
     </junit>
   </target>
 
-  <target name="docs-uptodate" depends="init">
-    <uptodate property="docs.uptodate">
-      <srcfiles dir="${basedir}/src/docs/">
-        <include name="**/*.txt" />
-      </srcfiles>
-      <mapper type="merge" to="${build.docs.timestamp}" />
-    </uptodate>
-  </target>
 
   <target name="checkversion">
     <if>
@@ -376,11 +358,10 @@
     </if>
   </target>
 
-  <target name="release" depends="checkversion,tar,docs"
+  <target name="release" depends="checkversion,tar"
       description="Roll a release artifact">
     <echo message="Release complete" />
     <echo message="Binary tar: ${tar.file}" />
-    <echo message="Docs: ${build.dir}/docs" />
   </target>
 
   <target name="mvn-prep" depends="init,ivy-resolve-common">
@@ -429,17 +410,6 @@
       <remoteRepository id="${mvn.repo.id}" url="${mvn.deploy.url}"/>
       <pom refid="sqoop-connectors" />
     </artifact:deploy>
-  </target>
-
-  <target name="docs" depends="docs-uptodate" unless="docs.uptodate"
-      description="Build documentation">
-    <exec executable="make" failonerror="true">
-      <arg value="-C" />
-      <arg value="${basedir}/src/docs" />
-      <arg value="BUILDROOT=${build.dir}" />
-      <arg value="VERSION=${version}" />
-    </exec>
-    <touch file="${build.docs.timestamp}" />
   </target>
 
   <target name="checkfailure" depends="test-core" if="tests.failed">
