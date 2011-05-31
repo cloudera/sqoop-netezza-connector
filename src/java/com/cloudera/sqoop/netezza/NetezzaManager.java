@@ -3,8 +3,8 @@
 package com.cloudera.sqoop.netezza;
 
 import java.io.IOException;
-
 import java.sql.Connection;
+import java.sql.Types;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,5 +64,16 @@ public class NetezzaManager extends GenericJdbcManager {
     context.setInputFormat(NetezzaJdbcInputFormat.class);
     super.importTable(context);
   }
+
+  @Override
+  public String toJavaType(int sqlType) {
+    String type = super.toJavaType(sqlType);
+    if (type == null && sqlType == Types.NVARCHAR) {
+      // netezza can handle NVARCHAR
+      return "String";
+    }
+    return type;
+  }
+
 }
 

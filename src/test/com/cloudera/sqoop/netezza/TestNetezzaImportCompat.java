@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.junit.Test;
 
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.manager.EnterpriseManagerFactory;
@@ -169,5 +170,25 @@ public class TestNetezzaImportCompat extends ManagerCompatTestCase {
       log.warn("Could not clear nzsessions: " + e);
     }
   }
+  
+  static final String STRING_VAL_IN = "'this is a short string'";
+  static final String STRING_VAL_OUT = "this is a short string";
+  
+  @Test
+  public void testNVarCharStringCol1() {
+    verifyType("NVARCHAR(32)", STRING_VAL_IN, STRING_VAL_OUT);
+  }
+
+  
+  @Test
+  public void testNVarCharEmptyStringCol() {   
+    verifyType("NVARCHAR(32)", "''", "");   
+  }
+
+  @Test
+  public void testNVarCharNullStringCol() {
+      verifyType("NVARCHAR(32)", "NULL", null);
+  }
+
 }
 

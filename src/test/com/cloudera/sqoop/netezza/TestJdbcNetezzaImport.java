@@ -376,5 +376,22 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyMissingLine(TABLE_NAME, "1,foo");
     verifyMissingLine(TABLE_NAME, "3,baz");
   }
+  
+  public void testNVarCharImport() throws Exception {
+    final String TABLE_NAME = "BASIC_DIRECT_IMPORT";
+    createTable(conn, TABLE_NAME, "INTEGER", "NVARCHAR(32)");
+    addRow(conn, TABLE_NAME, "1", "'meep'");
+    addRow(conn, TABLE_NAME, "2", "'beep'");
+    addRow(conn, TABLE_NAME, "3", "'foo'");
+    addRow(conn, TABLE_NAME, "4", "'bar'");
+
+    runImport(options, TABLE_NAME);
+    verifyImportCount(TABLE_NAME, 4);
+    verifyImportLine(TABLE_NAME, "1,meep");
+    verifyImportLine(TABLE_NAME, "2,beep");
+    verifyImportLine(TABLE_NAME, "3,foo");
+    verifyImportLine(TABLE_NAME, "4,bar");
+  }
+
 }
 

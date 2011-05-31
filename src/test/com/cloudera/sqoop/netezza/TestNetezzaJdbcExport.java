@@ -350,6 +350,22 @@ public class TestNetezzaJdbcExport extends TestCase {
       }
     });
   }
+  
+  public void testNVarCharExport() throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    Configuration conf = options.getConf();
+
+    createTableForType("NVARCHAR(64)");
+    Path p = new Path(getBasePath(), "strX.txt");
+    writeFileWithLine(conf, p, "1,bleh");
+    runExport(options, p);
+    checkValForId(1, new Checker() {
+      public void check(ResultSet rs) throws SQLException {
+        assertEquals("bleh", rs.getString(1));
+      }
+    });
+  }
+
 }
 
 
