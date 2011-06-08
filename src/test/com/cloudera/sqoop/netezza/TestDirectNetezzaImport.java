@@ -104,8 +104,11 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     final String TABLE_NAME = "MAX_ERRORS";
     createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
     addRow(conn, TABLE_NAME, "1", "'meep,beep'");
-    String[] extraArgs = { "--", "--" + DirectNetezzaManager.NZ_MAXERRORS_ARG,
-        "2", };
+    // TODO verifying maxErrors 2 requires error generated from external
+    // system.  We can check via visual inspection of the map query generated
+    // by the map task.
+    String[] extraArgs = { "--verbose", "--",
+        "--" + DirectNetezzaManager.NZ_MAXERRORS_ARG, "2", };
     runImport(options, TABLE_NAME, extraArgs);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");

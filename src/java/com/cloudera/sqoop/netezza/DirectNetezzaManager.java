@@ -72,6 +72,18 @@ public class DirectNetezzaManager extends NetezzaManager {
       throws IOException, ImportException {
     context.setConnManager(this);
 
+    // set netezza specific settings in context's sqoop options.
+    String[] extras = context.getOptions().getExtraArgs();
+    try {
+      parseExtraArgs(extras, context.getOptions().getConf());
+    } catch (ParseException e) {
+      throw new IllegalArgumentException(
+          "Bad arguments with netezza specific options", e);
+    } catch (InvalidOptionsException e) {
+      throw new IllegalArgumentException(
+          "Bad arguments with netezza specific options", e);
+    }
+    
     NetezzaImportJob importer = null;
     try {
       importer = new NetezzaImportJob(context);
