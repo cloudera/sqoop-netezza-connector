@@ -100,15 +100,14 @@ public class NetezzaExportMapper<KEYIN, VALIN>
         sb.append(NetezzaExportMapper.this.fifoFile.getAbsolutePath());
         sb.append("' USING (REMOTESOURCE 'JDBC' ");
         sb.append("BOOLSTYLE 'TRUE_FALSE' ");
-        sb.append("CRINSTRING FALSE "); 
-        sb.append("TRUNCSTRING TRUE ");         
+        sb.append("CRINSTRING FALSE ");
+        sb.append("TRUNCSTRING TRUE ");
         sb.append("DELIMITER ");
         sb.append(Integer.toString(fieldDelim));
         sb.append(" ENCODING 'internal' ");
         if (escape != '\000') {
           sb.append("ESCAPECHAR '\\' ");
         }
-        sb.append("ESCAPECHAR '\\' ");
         sb.append("FORMAT 'text' ");
         sb.append("INCLUDEZEROSECONDS TRUE ");
         sb.append("NULLVALUE 'null' ");
