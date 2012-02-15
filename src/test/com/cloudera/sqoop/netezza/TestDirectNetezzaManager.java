@@ -34,6 +34,24 @@ public class TestDirectNetezzaManager extends TestCase {
   }
 
   /**
+   * Test verifies that the "--nz-logdir" option is correctly parsed
+   * and present in the configuration used by MR jobs.
+   *
+   * @throws ParseException
+   * @throws InvalidOptionsException
+   */
+  public void testParseExtraArgsLogDir() throws ParseException,
+      InvalidOptionsException {
+    SqoopOptions opts = new SqoopOptions();
+    DirectNetezzaManager m = new DirectNetezzaManager(opts);
+    String[] args = { "--" + DirectNetezzaManager.NZ_LOGDIR_ARG, "/tmp/nz" };
+    Configuration conf = opts.getConf();
+    m.parseExtraArgs(args, conf);
+
+    assertEquals("/tmp/nz", conf.get(DirectNetezzaManager.NZ_LOGDIR_CONF));
+  }
+
+  /**
    * Test verifies that bad "extra args" are parsed and present in conf's used
    * by MR jobs.
    *

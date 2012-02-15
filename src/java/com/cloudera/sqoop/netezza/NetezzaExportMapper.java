@@ -24,6 +24,7 @@ import com.cloudera.sqoop.lib.SqoopRecord;
 import com.cloudera.sqoop.manager.MySQLUtils;
 import com.cloudera.sqoop.mapreduce.ExportJobBase;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
+import com.cloudera.sqoop.netezza.util.NetezzaUtil;
 import com.cloudera.sqoop.util.TaskId;
 
 /**
@@ -114,6 +115,10 @@ public class NetezzaExportMapper<KEYIN, VALIN>
 
         int maxErrors = conf.getInt(DirectNetezzaManager.NZ_MAXERRORS_CONF, 1);
         sb.append("MAXERRORS " + maxErrors + " ");
+        String logDir = conf.get(DirectNetezzaManager.NZ_LOGDIR_CONF);
+        if (logDir != null && logDir.trim().length() > 0) {
+          sb.append("LOGDIR " + logDir + " ");
+        }
         sb.append(")");
 
         String sql = sb.toString();
@@ -167,6 +172,10 @@ public class NetezzaExportMapper<KEYIN, VALIN>
     } catch (SQLException sqlE) {
       throw new IOException(sqlE);
     }
+
+    // Create log directory if specified
+    NetezzaUtil.createLogDirectoryIfSpecified(conf);
+
     this.jdbcThread.start();
 
     // Open the write side of the FIFO.

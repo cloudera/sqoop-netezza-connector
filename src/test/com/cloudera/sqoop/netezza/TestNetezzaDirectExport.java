@@ -2,6 +2,8 @@
 
 package com.cloudera.sqoop.netezza;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -9,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.junit.Assert;
 
 import com.cloudera.sqoop.SqoopOptions;
 
@@ -32,7 +35,7 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
 
   /**
    * This tests overriding a the Netezza specific MAXERRORS export argument.
-   * This is an extra argument specified using sqoop's "extra argument" args 
+   * This is an extra argument specified using sqoop's "extra argument" args
    * that come after a "--" arg.
    */
   public void testMaxErrors() throws Exception {
@@ -91,6 +94,63 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
         assertEquals("this str", rs.getString(1));
       }
     });
+  }
+
+  /**
+   * This tests the option to specify a LOGDIR for direct import. This option
+   * ends up creating a log directory if it does not exist and Netezza writes
+   * the nzlog/nzbad files to this directory for all problems encountered.
+   *
+   * @throws Exception
+   */
+  public void testBadRecordsWithNonExistentLogDir() throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    options.setInputFieldsTerminatedBy('|');
+    Configuration conf = options.getConf();
+
+    createTableForType("INTEGER");
+    Path p = new Path(getBasePath(), "badrec.txt");
+    writeFileWithLine(conf, p, "1|twenty");
+    File f = File.createTempFile("test", "nzexport.tmp");
+    String logDirPath = f.getAbsolutePath() + ".dir";
+    f.delete();
+
+    String[] extraArgs = { "--", "--nz-maxerrors", "2", "--nz-logdir",
+        logDirPath };
+
+    runExport(options, p, extraArgs);
+
+    File dir = new File(logDirPath);
+    Assert.assertTrue(dir.exists());
+
+    File[] badRecordFiles = dir.listFiles(new FileFilter() {
+
+      @Override
+      public boolean accept(File pathname) {
+        return pathname != null
+            && pathname.getName().toLowerCase().endsWith(".nzbad");
+      } });
+
+    Assert.assertNotNull(badRecordFiles);
+    Assert.assertEquals(1, badRecordFiles.length);
+
+    File[] logFiles = dir.listFiles(new FileFilter() {
+
+      @Override
+      public boolean accept(File pathname) {
+        return pathname != null
+            && pathname.getName().toLowerCase().endsWith(".nzlog");
+      }
+
+    });
+
+    Assert.assertNotNull(logFiles);
+    Assert.assertEquals(1, logFiles.length);
+
+    // cleanup
+    logFiles[0].delete();
+    badRecordFiles[0].delete();
+    dir.delete();
   }
 
 }

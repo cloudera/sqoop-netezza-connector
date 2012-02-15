@@ -22,6 +22,7 @@ import org.apache.hadoop.util.StringUtils;
 import com.cloudera.sqoop.io.NamedFifo;
 import com.cloudera.sqoop.manager.MySQLUtils;
 import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
+import com.cloudera.sqoop.netezza.util.NetezzaUtil;
 import com.cloudera.sqoop.config.ConfigurationHelper;
 import com.cloudera.sqoop.util.TaskId;
 
@@ -41,7 +42,7 @@ public class NetezzaImportMapper
 
   /** The Reader we are using to read the fifo data. */
   private BufferedReader importReader;
-  
+
   private class JdbcThread extends Thread {
     private SQLException sqlException;
     private Connection conn;
@@ -102,10 +103,14 @@ public class NetezzaImportMapper
         sb.append("FORMAT 'text' ");
         sb.append("INCLUDEZEROSECONDS TRUE ");
         sb.append("NULLVALUE 'null' ");
-        
+
         int maxErrors = conf.getInt(DirectNetezzaManager.NZ_MAXERRORS_CONF, 1);
         sb.append("MAXERRORS " + maxErrors + " ");
-        
+        String logDir = conf.get(DirectNetezzaManager.NZ_LOGDIR_CONF);
+        if (logDir != null && logDir.trim().length() > 0) {
+          sb.append("LOGDIR " + logDir + " ");
+        }
+
         sb.append(") AS SELECT ");
         String [] fields = dbConf.getInputFieldNames();
         if (null == fields || fields.length == 0) {
@@ -188,6 +193,10 @@ public class NetezzaImportMapper
     } catch (SQLException sqlE) {
       throw new IOException(sqlE);
     }
+
+    // Create log directory if specified
+    NetezzaUtil.createLogDirectoryIfSpecified(conf);
+
     this.jdbcThread.start();
 
     // Open the read side of the FIFO.
@@ -198,7 +207,7 @@ public class NetezzaImportMapper
   @Override
   public void map(Integer slice, NullWritable ignored, Context context)
       throws IOException, InterruptedException {
-    
+
     // Configure and execute a direct-mode export.
 
     this.conf = context.getConfiguration();

@@ -90,7 +90,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     verifyImportLine(TABLE_NAME, "1,foo");
     verifyImportLine(TABLE_NAME, "3,baz");
   }
-  
+
   /**
    * This tests overriding a the Netezza specific MAXERRORS export argument.
    * This is an extra argument specified using sqoop's "extra argument" args

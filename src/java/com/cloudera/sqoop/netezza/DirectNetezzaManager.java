@@ -30,8 +30,13 @@ public class DirectNetezzaManager extends NetezzaManager {
 
   // Hadoop Configuration key
   public static final String NZ_MAXERRORS_CONF = "nz.export.maxerrors";
+  public static final String NZ_LOGDIR_CONF = "nz.export.logdir";
+
   // cmd line args
   public static final String NZ_MAXERRORS_ARG = "nz-maxerrors";
+  public static final String NZ_LOGDIR_ARG = "nz-logdir";
+
+
 
   public DirectNetezzaManager(final SqoopOptions opts) {
     super(opts);
@@ -83,7 +88,7 @@ public class DirectNetezzaManager extends NetezzaManager {
       throw new IllegalArgumentException(
           "Bad arguments with netezza specific options", e);
     }
-    
+
     NetezzaImportJob importer = null;
     try {
       importer = new NetezzaImportJob(context);
@@ -136,6 +141,12 @@ public class DirectNetezzaManager extends NetezzaManager {
         .withDescription("Specify the maximum Netezza Connector "
             + "specific errors")
         .withLongOpt(NZ_MAXERRORS_ARG).create());
+
+    nzOpts.addOption(OptionBuilder.withArgName(NZ_LOGDIR_CONF).hasArg()
+        .withDescription("Specify the log directory where Netezza Connector "
+            + "will place the nzlog and nzbad files")
+            .withLongOpt(NZ_LOGDIR_ARG).create());
+
     return nzOpts;
   }
 
@@ -149,11 +160,16 @@ public class DirectNetezzaManager extends NetezzaManager {
   protected void applyCliOptions(CommandLine in, Configuration conf)
       throws InvalidOptionsException {
 
-    // common options.
+    // MAXERRORS option
     if (in.hasOption(NZ_MAXERRORS_ARG)) {
-      // Immediately switch into DEBUG logging.
       int maxerrs = Integer.parseInt(in.getOptionValue(NZ_MAXERRORS_ARG));
       conf.setInt(NZ_MAXERRORS_CONF, maxerrs);
+    }
+
+    // LOGDIR option
+    if (in.hasOption(NZ_LOGDIR_ARG)) {
+      String logDir = in.getOptionValue(NZ_LOGDIR_ARG);
+      conf.set(NZ_LOGDIR_CONF, logDir);
     }
   }
 }
