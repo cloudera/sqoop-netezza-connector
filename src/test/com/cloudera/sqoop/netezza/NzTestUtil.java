@@ -40,7 +40,7 @@ public class NzTestUtil {
   public static final String NETEZZA_DB = "sqooptestdb";
 
   /** Netezza DB username. */
-  public static final String NETEZZA_USER = "sqooptest";
+  public static final String NETEZZA_USER = "SQOOPTEST";
 
   /** Netezza DB password. */
   public static final String NETEZZA_PASS = "sqooptest";
@@ -84,7 +84,7 @@ public class NzTestUtil {
     args.add(ADMIN_PASS);
 
     Process p = Runtime.getRuntime().exec(args.toArray(new String[0]));
-    InputStream is = p.getInputStream(); 
+    InputStream is = p.getInputStream();
     LineBufferingAsyncSink sink = new LineBufferingAsyncSink();
     sink.processStream(is);
 
@@ -241,6 +241,27 @@ public class NzTestUtil {
     } catch (SQLException sqlE) {
       // DROP TABLE may not succeed; the table might not exist. Just continue.
       LOG.warn("Ignoring SQL Exception dropping table " + tableName
+          + " : " + sqlE);
+
+      // Clear current query state.
+      conn.rollback();
+    } finally {
+      if (null != s) {
+        s.close();
+      }
+    }
+  }
+
+  public static void dropViewIfExists(Connection conn, String viewName)
+      throws SQLException {
+    PreparedStatement s = null;
+    try {
+      s = conn.prepareStatement("DROP VIEW " + viewName);
+      s.executeUpdate();
+      conn.commit();
+    } catch (SQLException sqlE) {
+      // DROP TABLE may not succeed; the table might not exist. Just continue.
+      LOG.warn("Ignoring SQL Exception dropping view " + viewName
           + " : " + sqlE);
 
       // Clear current query state.

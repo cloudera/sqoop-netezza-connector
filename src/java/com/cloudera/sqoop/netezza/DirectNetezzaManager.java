@@ -3,6 +3,10 @@
 package com.cloudera.sqoop.netezza;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -36,6 +40,17 @@ public class DirectNetezzaManager extends NetezzaManager {
   public static final String NZ_MAXERRORS_ARG = "nz-maxerrors";
   public static final String NZ_LOGDIR_ARG = "nz-logdir";
 
+  // Catalog query for looking up object types
+  private static final String QUERY_OBJECTY_TYPE = "SELECT OBJTYPE FROM "
+      + "_V_OBJECTS WHERE OBJNAME = ? AND OWNER = ?";
+
+  // Error message used for indicating that only Table based import export
+  // is allowed. This is needed as a constant to ensure correct working of
+  // tests that assert this functionality.
+  public static final String ERROR_MESSAGE_TABLE_SUPPORT_ONLY =
+      "The direct mode of operation can only work with "
+          + "real tables. Using it against view or other types is not "
+          + "supported.";
 
 
   public DirectNetezzaManager(final SqoopOptions opts) {
@@ -63,8 +78,73 @@ public class DirectNetezzaManager extends NetezzaManager {
           "Bad arguments with netezza specific options", e);
     }
 
+    // Netezza specific validations
+    validateTargetObjectType();
+
     NetezzaExportJob exportJob = new NetezzaExportJob(context);
     exportJob.runExport();
+  }
+
+  /**
+   * Validates that the operation is being performed against a TABLE and not
+   * any other object type such as VIEW or MATERIALIZED VIEW. This is because
+   * the underlying external table based load/export is only supported for
+   * TABLE type objects and not for other types. This method raises an
+   * IOException if the given table is not a TABLE type.
+   *
+   * @throws IOException if the target object is not a TABLE type.
+   */
+  private void validateTargetObjectType() throws IOException {
+    String givenTableName = options.getTableName();
+
+    String owner = options.getUsername();
+    String shortTableName = givenTableName;
+
+    int dotIndex = givenTableName.indexOf('.');
+    if (dotIndex != -1) {
+      owner = givenTableName.substring(0, dotIndex);
+      shortTableName = givenTableName.substring(dotIndex + 1);
+    }
+
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+
+    try {
+      conn = getConnection();
+
+      pstmt = conn.prepareStatement(QUERY_OBJECTY_TYPE,
+          ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+      pstmt.setString(1, shortTableName);
+      pstmt.setString(2, owner);
+
+      ResultSet rset = pstmt.executeQuery();
+
+      if (!rset.next()) {
+        throw new IOException("Unable to validate object type for given table. "
+            + "Please ensure that the given user name and table name is in the "
+            + "the correct case. If you are not sure, please use upper case to "
+            + "specify both these values.");
+      }
+
+      String objType = rset.getString(1);
+      LOG.debug("Object type found to be: " + objType);
+      if (!objType.equalsIgnoreCase("TABLE")) {
+        throw new IOException(ERROR_MESSAGE_TABLE_SUPPORT_ONLY);
+      }
+    } catch (SQLException ex) {
+      LOG.error("Unable to verify object type", ex);
+      throw new IOException(ex);
+    } finally {
+      if (pstmt != null) {
+        try {
+          pstmt.close();
+        } catch (SQLException ex) {
+          LOG.error("Unable to close prepared statement for object type check",
+              ex);
+        }
+      }
+    }
   }
 
   @Override
@@ -104,6 +184,9 @@ public class DirectNetezzaManager extends NetezzaManager {
           + " is not supported by Netezza direct import. Import will proceed "
           + "as text files.");
     }
+
+    // Netezza specific validations
+    validateTargetObjectType();
 
     importer.runImport(options.getTableName(), context.getJarFile(), null,
         options.getConf());

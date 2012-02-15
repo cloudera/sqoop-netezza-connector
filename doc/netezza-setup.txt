@@ -25,7 +25,7 @@ $ nzsql -u admin -pw password -d system -h nzhost
 => CREATE DATABASE SQOOPTESTDB;
 
 # Create a Sqoop user.
-=> CREATE USER sqooptest WITH PASSWORD 'sqooptest';
+=> CREATE USER SQOOPTEST WITH PASSWORD 'sqooptest';
 => \q
 
 
@@ -38,6 +38,7 @@ $ nzsql -u admin -pw password -d sqooptestdb -h nzhost
 # Grant ability to create/delete tables to sqooptest.
 => GRANT TABLE TO SQOOPTEST;
 => GRANT EXTERNAL TABLE TO SQOOPTEST;
+=> GRANT CREATE VIEW TO SQOOPTEST;
 => \q
 
 

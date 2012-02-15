@@ -2,10 +2,13 @@
 
 package com.cloudera.sqoop.netezza;
 
+import junit.framework.Assert;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 
+import com.cloudera.sqoop.Sqoop;
 import com.cloudera.sqoop.SqoopOptions;
 
 /**
@@ -112,6 +115,33 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     runImport(options, TABLE_NAME, extraArgs);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");
+  }
+
+
+  /**
+   * This test creates a view and asserts that you cannot import from that
+   * view because only table types are supported. Due to limitations of the
+   * Sqoop framework, the exception message is compared to ensure that this
+   * is indeed the case.
+   * @throws Exception
+   */
+  public void testNoViewSupport() throws Exception {
+    final String TABLE_NAME = "MY_TABLE";
+    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, TABLE_NAME, "1", "'meep,beep'");
+
+    final String VIEW_NAME = "MY_VIEW";
+    createView(conn, VIEW_NAME, "SELECT * FROM " + TABLE_NAME);
+    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
+    String message = null;
+    try {
+      runImport(options, VIEW_NAME);
+    } catch (RuntimeException ex) {
+      message = ex.getMessage();
+    }
+
+    Assert.assertTrue(message != null && message.endsWith(": "
+              + DirectNetezzaManager.ERROR_MESSAGE_TABLE_SUPPORT_ONLY));
   }
 }
 

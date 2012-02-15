@@ -123,6 +123,29 @@ public class TestJdbcNetezzaImport extends TestCase {
     }
   }
 
+  protected void createView(Connection c, String viewName, String selectQuery)
+      throws SQLException {
+
+    if (selectQuery == null) {
+      throw new SQLException("msut have a select query");
+    }
+
+    NzTestUtil.dropViewIfExists(c, viewName);
+
+    String query = "CREATE VIEW " + viewName + " AS " + selectQuery;
+
+    PreparedStatement stmt = null;
+    try {
+      stmt = c.prepareStatement(query);
+      stmt.executeUpdate();
+      c.commit();
+    } finally {
+      if (stmt != null) {
+        stmt.close();
+      }
+    }
+  }
+
   protected void addRow(Connection c, String tableName, String... values)
       throws SQLException {
 
@@ -157,7 +180,7 @@ public class TestJdbcNetezzaImport extends TestCase {
           throws Exception {
     runImport(sqoopOptions, tableName, new String[0]);
   }
-  
+
   protected void runImport(SqoopOptions sqoopOptions, String tableName,
       String[] extraArgs) throws Exception {
 
@@ -376,7 +399,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyMissingLine(TABLE_NAME, "1,foo");
     verifyMissingLine(TABLE_NAME, "3,baz");
   }
-  
+
   public void testNVarCharImport() throws Exception {
     final String TABLE_NAME = "BASIC_DIRECT_IMPORT";
     createTable(conn, TABLE_NAME, "INTEGER", "NVARCHAR(32)");
