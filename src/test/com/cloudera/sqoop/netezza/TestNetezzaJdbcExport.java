@@ -204,8 +204,8 @@ public class TestNetezzaJdbcExport extends TestCase {
   protected void runExport(SqoopOptions options, Path p) throws Exception {
     runExport(options, p, new String[0]);
   }
-  
-  protected void runExport(SqoopOptions options, Path p, String[] sqoopArgs) 
+
+  protected void runExport(SqoopOptions options, Path p, String[] sqoopArgs)
     throws Exception {
     options.setExplicitDelims(true);
     options.setExportDir(p.toString());
@@ -350,7 +350,7 @@ public class TestNetezzaJdbcExport extends TestCase {
       }
     });
   }
-  
+
   public void testNVarCharExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -362,6 +362,21 @@ public class TestNetezzaJdbcExport extends TestCase {
     checkValForId(1, new Checker() {
       public void check(ResultSet rs) throws SQLException {
         assertEquals("bleh", rs.getString(1));
+      }
+    });
+  }
+
+  public void testNCharExport() throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    Configuration conf = options.getConf();
+
+    createTableForType("NCHAR");
+    Path p = new Path(getBasePath(), "charY.txt");
+    writeFileWithLine(conf, p, "1,b");
+    runExport(options, p);
+    checkValForId(1, new Checker() {
+      public void check(ResultSet rs) throws SQLException {
+        assertEquals("b", rs.getString(1));
       }
     });
   }

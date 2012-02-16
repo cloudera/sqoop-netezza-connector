@@ -68,10 +68,12 @@ public class NetezzaManager extends GenericJdbcManager {
   @Override
   public String toJavaType(int sqlType) {
     String type = super.toJavaType(sqlType);
-    if (type == null && sqlType == Types.NVARCHAR) {
-      // netezza can handle NVARCHAR
-      return "String";
+    if (type == null) {
+      if (sqlType == Types.NVARCHAR || sqlType == Types.NCHAR) {
+        type = "String";
+      }
     }
+
     return type;
   }
 

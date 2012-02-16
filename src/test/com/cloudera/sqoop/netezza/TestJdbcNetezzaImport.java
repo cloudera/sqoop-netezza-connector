@@ -416,5 +416,19 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "4,bar");
   }
 
+  public void testNCharImport() throws Exception {
+    final String TABLE_NAME = "NCHAR_TABLE";
+    createTable(conn, TABLE_NAME, "INTEGER", "NCHAR");
+    addRow(conn, TABLE_NAME, "1", "'x'");
+    addRow(conn, TABLE_NAME, "2", "'y'");
+    addRow(conn, TABLE_NAME, "3", "'z'");
+
+    runImport(options, TABLE_NAME);
+    verifyImportCount(TABLE_NAME, 3);
+    verifyImportLine(TABLE_NAME, "1,x");
+    verifyImportLine(TABLE_NAME, "2,y");
+    verifyImportLine(TABLE_NAME, "3,z");
+  }
+
 }
 
