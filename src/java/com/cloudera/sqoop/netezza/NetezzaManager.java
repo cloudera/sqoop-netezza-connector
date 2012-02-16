@@ -47,6 +47,18 @@ public class NetezzaManager extends GenericJdbcManager {
   }
 
   @Override
+  public void updateTable(ExportJobContext context)
+      throws IOException, ExportException {
+    if (context.getOptions().getNumMappers() != 1) {
+      throw new ExportException("The Cloudera Connector for Netezza does not "
+          + "support multi-mapper exports in update mode. Please try again "
+          + "with number of mappers explicitly set to 1.");
+    }
+
+    super.updateTable(context);
+  }
+
+  @Override
   protected void checkTableImportOptions(ImportJobContext context)
       throws IOException, ImportException {
     // SqlManager implementation validates that there is a split column

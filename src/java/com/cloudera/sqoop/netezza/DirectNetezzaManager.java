@@ -85,6 +85,13 @@ public class DirectNetezzaManager extends NetezzaManager {
     exportJob.runExport();
   }
 
+  @Override
+  public void updateTable(ExportJobContext context)
+      throws IOException, ExportException {
+    throw new ExportException("The direct mode of Cloudera Connector for "
+        + "Netezza does not support exports in update mode.");
+  }
+
   /**
    * Validates that the operation is being performed against a TABLE and not
    * any other object type such as VIEW or MATERIALIZED VIEW. This is because
