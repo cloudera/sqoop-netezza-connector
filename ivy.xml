@@ -46,10 +46,10 @@
   </publications>
   <dependencies>
     <!-- Dependencies for Cloudera's Distribution for Hadoop -->
-    <dependency org="org.apache.hadoop" name="hadoop-core"
-      rev="${hadoop-core.cloudera.version}" conf="common->default"/>
-    <dependency org="org.apache.hadoop" name="hadoop-test"
-      rev="${hadoop-core.cloudera.version}" conf="test->default"/>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core"
+      rev="${hadoop-mapreduce-client-core.version}" conf="common->default"/>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-common"
+      rev="${hadoop-mapreduce-client-common.version}" conf="test->default"/>
 
     <!-- Common dependencies for Sqoop -->
     <dependency org="commons-cli" name="commons-cli"
