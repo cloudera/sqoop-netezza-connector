@@ -68,18 +68,21 @@
       conf="checkstyle->default" />
 
     <!-- dependencies on Sqoop -->
-    <dependency org="com.cloudera.sqoop" name="sqoop"
+    <dependency org="org.apache.sqoop" name="sqoop"
       rev="${sqoop.version}" conf="common->default">
        <exclude org="com.sun.jersey" module="jersey-core"/>
        <exclude org="com.sun.jersey" module="jersey-json"/>
        <exclude org="com.sun.jersey" module="jersey-server"/>
        <exclude org="org.apache.thrift" module="thrift"/>
        <exclude org="log4j" module="log4j"/>
+       <exclude org="ant" module="ant"/>
     </dependency>
-    <dependency org="com.cloudera.sqoop" name="sqoop"
+    <dependency org="org.apache.sqoop" name="sqoop"
        rev="${sqoop.version}" conf="test->default">
         <artifact name="sqoop" type="test-jar" ext="jar" m:classifier="tests"/>
     </dependency>
+
+    <exclude org="commons-daemon" module="commons-daemon" />
 
   </dependencies>
 </ivy-module>

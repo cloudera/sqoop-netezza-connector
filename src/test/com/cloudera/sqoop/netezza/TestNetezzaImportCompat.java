@@ -104,7 +104,6 @@ public class TestNetezzaImportCompat extends ManagerCompatTestCase {
 
   // CHAR() types are space-padded in Netezza.
 
-  @Override
   protected String getFixedCharDbOut(int fieldWidth, String asInserted) {
     return padString(fieldWidth, asInserted);
   }
@@ -114,7 +113,6 @@ public class TestNetezzaImportCompat extends ManagerCompatTestCase {
     return padString(fieldWidth, asInserted);
   }
 
-  @Override
   protected String getTimestampDbOutput(String tsAsInserted) {
     // Default getTimestampDbOutput() adds a lot of zero-padding;
     // SeqOutput() does not. We need the SeqOutput behavior here.
@@ -151,12 +149,10 @@ public class TestNetezzaImportCompat extends ManagerCompatTestCase {
     return sb.toString();
   }
 
-  @Override
   protected String getNumericDbOutput(String asInserted) {
     return zeroPad(asInserted, 5);
   }
 
-  @Override
   protected String getDecimalDbOutput(String asInserted) {
     return zeroPad(asInserted, 5);
   }
@@ -188,6 +184,30 @@ public class TestNetezzaImportCompat extends ManagerCompatTestCase {
   @Test
   public void testNVarCharNullStringCol() {
       verifyType("NVARCHAR(32)", "NULL", null);
+  }
+
+  @Test
+  public void testNumeric1() {
+    verifyType(getNumericType(), "1",
+        getNumericSeqOutput("1.00000"));
+  }
+
+  @Test
+  public void testNumeric2() {
+    verifyType(getNumericType(), "-10",
+        getNumericSeqOutput("-10.00000"));
+  }
+
+  @Test
+  public void testDecimal1() {
+    verifyType(getDecimalType(), "1",
+        getDecimalSeqOutput("1.00000"));
+  }
+
+  @Test
+  public void testDecimal2() {
+    verifyType(getDecimalType(), "-10",
+        getDecimalSeqOutput("-10.00000"));
   }
 
 }
