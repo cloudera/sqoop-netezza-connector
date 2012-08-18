@@ -116,7 +116,7 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     f.delete();
 
     String[] extraArgs = { "--", "--nz-maxerrors", "2", "--nz-logdir",
-        logDirPath };
+        logDirPath, };
 
     runExport(options, p, extraArgs);
 
@@ -153,4 +153,23 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     dir.delete();
   }
 
-}
+  public void testNullSubstitutionString() throws Exception {
+    // Ensure that we're correctly supporting NULL substitutions
+    SqoopOptions options = getSqoopOptions();
+    Configuration conf = options.getConf();
+    options.setInputFieldsTerminatedBy('|');
+    options.setInNullStringValue("\\\\N");
+
+    createTableForType("VARCHAR(32)");
+
+    Path p = new Path(getBasePath(), "null_substitution.txt");
+    writeFileWithLine(conf, p, "1|\\N");
+
+    runExport(options, p);
+
+    checkValForId(1, new Checker() {
+      public void check(ResultSet rs) throws SQLException {
+        assertNull(rs.getString(1));
+      }
+    });
+  }}

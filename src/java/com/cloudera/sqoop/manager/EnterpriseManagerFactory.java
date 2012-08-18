@@ -1,4 +1,4 @@
-// (c) Copyright 2010,2011 Cloudera, Inc. All Rights Reserved.
+// (c) Copyright 2010 Cloudera, Inc. All Rights Reserved.
 
 package com.cloudera.sqoop.manager;
 
@@ -7,7 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Trivial extension to class to maintain backwards compatiblity with old
- * EnterpriseManagerFactory
+ * EnterpriseManagerFactory.
  */
 @Deprecated
 public class EnterpriseManagerFactory extends NetezzaManagerFactory {

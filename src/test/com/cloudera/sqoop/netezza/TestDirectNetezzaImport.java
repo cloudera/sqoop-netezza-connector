@@ -23,10 +23,10 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     return "directnetezza";
   }
 
-  @Override
   /**
    * Create a SqoopOptions to connect to the manager.
    */
+  @Override
   public SqoopOptions getSqoopOptions(Configuration conf) {
     SqoopOptions options = super.getSqoopOptions(conf);
 
@@ -142,6 +142,18 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
     Assert.assertTrue(message != null && message.endsWith(": "
               + DirectNetezzaManager.ERROR_MESSAGE_TABLE_SUPPORT_ONLY));
+  }
+
+  public void testNullSubstitutionString() throws Exception {
+    // Ensure that we're correctly supporting NULL substitutions
+    final String TABLE_NAME = "NULL_SUBSTITUTION";
+    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, TABLE_NAME, "1", "null");
+    options.setNullStringValue("\\\\N");
+
+    runImport(options, TABLE_NAME);
+    verifyImportCount(TABLE_NAME, 1);
+    verifyImportLine(TABLE_NAME, "1,\\N");
   }
 }
 

@@ -27,6 +27,8 @@ import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
 import com.cloudera.sqoop.netezza.util.NetezzaUtil;
 import com.cloudera.sqoop.util.TaskId;
 
+import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
+
 /**
  * Mapper that writes to a named FIFO which will be used to export rows
  * from HDFS to Netezza at high speed.
@@ -111,7 +113,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
         }
         sb.append("FORMAT 'text' ");
         sb.append("INCLUDEZEROSECONDS TRUE ");
-        sb.append("NULLVALUE 'null' ");
+        sb.append("NULLVALUE ? ");
 
         int maxErrors = conf.getInt(DirectNetezzaManager.NZ_MAXERRORS_CONF, 1);
         sb.append("MAXERRORS " + maxErrors + " ");
@@ -126,6 +128,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
 
         try {
           ps = conn.prepareStatement(sql);
+          ps.setString(1, conf.get(PROPERTY_NULL_STRING, "null"));
           ps.executeUpdate();
         } finally {
           if (null != ps) {

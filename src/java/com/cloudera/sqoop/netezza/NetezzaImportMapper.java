@@ -26,6 +26,8 @@ import com.cloudera.sqoop.netezza.util.NetezzaUtil;
 import com.cloudera.sqoop.config.ConfigurationHelper;
 import com.cloudera.sqoop.util.TaskId;
 
+import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
+
 /**
  * Mapper that performs a direct-mode import from Netezza.
  */
@@ -102,7 +104,7 @@ public class NetezzaImportMapper
         }
         sb.append("FORMAT 'text' ");
         sb.append("INCLUDEZEROSECONDS TRUE ");
-        sb.append("NULLVALUE 'null' ");
+        sb.append("NULLVALUE ? ");
 
         int maxErrors = conf.getInt(DirectNetezzaManager.NZ_MAXERRORS_CONF, 1);
         sb.append("MAXERRORS " + maxErrors + " ");
@@ -145,6 +147,7 @@ public class NetezzaImportMapper
 
         try {
           ps = conn.prepareStatement(sql);
+          ps.setString(1, conf.get(PROPERTY_NULL_STRING, "null"));
           ps.execute();
         } finally {
           if (null != ps) {

@@ -45,7 +45,7 @@
   <!-- testing with JUnit -->
   <property name="test.junit.output.format" value="plain"/>
   <property name="test.output" value="no"/>
-  <property name="test.timeout" value="900000"/>
+  <property name="test.timeout" value="1800000"/>
 
   <!-- static analysis -->
   <property name="findbugs.out.dir" value="${build.dir}/findbugs" />

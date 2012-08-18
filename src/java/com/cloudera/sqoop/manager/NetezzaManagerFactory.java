@@ -1,4 +1,4 @@
-// (c) Copyright 2010,2011 Cloudera, Inc. All Rights Reserved.
+// (c) Copyright 2010 Cloudera, Inc. All Rights Reserved.
 
 package com.cloudera.sqoop.manager;
 
@@ -83,7 +83,7 @@ public class NetezzaManagerFactory extends ManagerFactory {
         return new DirectNetezzaManager(options);
       } else {
         return new NetezzaManager(options);
-      }    
+      }
     } else {
       return null;
     }

@@ -25,6 +25,9 @@ import com.cloudera.sqoop.manager.ImportJobContext;
 import com.cloudera.sqoop.util.ExportException;
 import com.cloudera.sqoop.util.ImportException;
 
+import com.cloudera.sqoop.netezza.util.NetezzaUtil;
+import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
+
 /**
  * Uses remote external tables to import/export bulk data to/from Netezza.
  */
@@ -57,19 +60,21 @@ public class DirectNetezzaManager extends NetezzaManager {
     super(opts);
   }
 
-  @Override
   /**
    *  Export the table from HDFS to NZ by using remote external
    *  tables to insert the data back into the database.
    */
+  @Override
   public void exportTable(ExportJobContext context)
       throws IOException, ExportException {
     context.setConnManager(this);
 
+    SqoopOptions options = context.getOptions();
+
     // set netezza specific settings in context's sqoop options.
-    String[] extras = context.getOptions().getExtraArgs();
+    String[] extras = options.getExtraArgs();
     try {
-      parseExtraArgs(extras, context.getOptions().getConf());
+      parseExtraArgs(extras, options.getConf());
     } catch (ParseException e) {
       throw new IllegalArgumentException(
           "Bad arguments with netezza specific options", e);
@@ -81,6 +86,11 @@ public class DirectNetezzaManager extends NetezzaManager {
     // Netezza specific validations
     validateTargetObjectType();
 
+    // Handle NULL string
+    propagateNullSubstituteValues(options.getInNullStringValue(),
+                                  options.getInNullNonStringValue(),
+                                  options.getConf());
+    // Run the export itself
     NetezzaExportJob exportJob = new NetezzaExportJob(context);
     exportJob.runExport();
   }
@@ -90,6 +100,48 @@ public class DirectNetezzaManager extends NetezzaManager {
       throws IOException, ExportException {
     throw new ExportException("The direct mode of Cloudera Connector for "
         + "Netezza does not support exports in update mode.");
+  }
+
+  /**
+   * Propagate configuration of NULL substituion string to configuration object
+   * so that it can be retrieved from job. Prior to doing so this method will
+   * validate the configuration for acceptable values.
+   *
+   * @param string Substitution for string columns
+   * @param nonString Substitution for non string columns
+   * @param configuration Job's configuration object
+   */
+  public void propagateNullSubstituteValues(String string, String nonString,
+                                             Configuration configuration) {
+    // Validate supported configuration (this should be in some generic handler,
+    // however sqoop does not have something like that at the moment).
+
+    // We do not supports custom NULL substitution characters for non string
+    if (nonString != null) {
+      throw new RuntimeException("Detected incompatible NULL substitution"
+        + " strings. Netezza direct connector do not supports custom NULL"
+        + " escape character for non string values. Please remove"
+        + " --input-null-non-string in case of export job or --null-non-string"
+        + " in case of import job.");
+    }
+
+    // We do not need to continue in case that user is using defaults
+    if (string == null) { return; }
+
+    // Our de-escaping is not suporting octal escape sequences
+    if (string.matches("\\\\[0-9]+")) {
+      throw new RuntimeException("It seems that you've specified octal based"
+        + " escape sequences in NULL substitution string. Netezza direct"
+        + " connector does not support them at the moment. Please use non"
+        + " direct mode by omitting --direct parameter.");
+    }
+
+    // De-escape all escape sequences
+    String deEscaped = NetezzaUtil.removeEscapeCharacters(string);
+    LOG.debug("Using de-escaped NULL substitution string: " + deEscaped);
+
+    // Save it to job
+    configuration.set(PROPERTY_NULL_STRING, deEscaped);
   }
 
   /**
@@ -154,12 +206,12 @@ public class DirectNetezzaManager extends NetezzaManager {
     }
   }
 
-  @Override
   /**
    * Import the table from NZ to HDFS by reading from remote
    * external tables.
    * {@inheritDoc}
    */
+  @Override
   public void importTable(ImportJobContext context)
       throws IOException, ImportException {
     context.setConnManager(this);
@@ -195,6 +247,12 @@ public class DirectNetezzaManager extends NetezzaManager {
     // Netezza specific validations
     validateTargetObjectType();
 
+    // Handle NULL string
+    propagateNullSubstituteValues(options.getNullStringValue(),
+                                  options.getNullNonStringValue(),
+                                  options.getConf());
+
+    // Run import job
     importer.runImport(options.getTableName(), context.getJarFile(), null,
         options.getConf());
   }

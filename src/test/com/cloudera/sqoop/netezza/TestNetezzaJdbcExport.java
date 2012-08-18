@@ -380,7 +380,6 @@ public class TestNetezzaJdbcExport extends TestCase {
       }
     });
   }
-
 }
 
 
