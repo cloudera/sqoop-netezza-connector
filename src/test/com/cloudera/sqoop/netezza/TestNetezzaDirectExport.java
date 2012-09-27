@@ -172,4 +172,22 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
         assertNull(rs.getString(1));
       }
     });
-  }}
+  }
+
+  public void testStringExportLowAscii() throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    Configuration conf = options.getConf();
+
+    String[] extraArgs = { "--", "--nz-ctrlchars", };
+
+    createTableForType("VARCHAR(64)");
+    Path p = new Path(getBasePath(), "strZ.txt");
+    writeFileWithLine(conf, p, "1,a\tb\bc");
+    runExport(options, p, extraArgs);
+    checkValForId(1, new Checker() {
+      public void check(ResultSet rs) throws SQLException {
+        assertEquals("a\tb\bc", rs.getString(1));
+      }
+    });
+  }
+}

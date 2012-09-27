@@ -90,6 +90,8 @@ public class NetezzaImportMapper
             MySQLUtils.OUTPUT_FIELD_DELIM_KEY, (int) ',');
         char escape = (char) conf.getInt(
             MySQLUtils.OUTPUT_ESCAPED_BY_KEY, '\000');
+        boolean ctrlChars =
+          conf.getBoolean(DirectNetezzaManager.NZ_CTRLCHARS_CONF, false);
 
         sb.append("CREATE EXTERNAL TABLE '");
         sb.append(NetezzaImportMapper.this.fifoFile.getAbsolutePath());
@@ -105,6 +107,8 @@ public class NetezzaImportMapper
         sb.append("FORMAT 'text' ");
         sb.append("INCLUDEZEROSECONDS TRUE ");
         sb.append("NULLVALUE ? ");
+        sb.append("CTRLCHARS ");
+        sb.append(ctrlChars ? "true " : "false ");
 
         int maxErrors = conf.getInt(DirectNetezzaManager.NZ_MAXERRORS_CONF, 1);
         sb.append("MAXERRORS " + maxErrors + " ");

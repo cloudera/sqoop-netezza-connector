@@ -38,10 +38,12 @@ public class DirectNetezzaManager extends NetezzaManager {
   // Hadoop Configuration key
   public static final String NZ_MAXERRORS_CONF = "nz.export.maxerrors";
   public static final String NZ_LOGDIR_CONF = "nz.export.logdir";
+  public static final String NZ_CTRLCHARS_CONF = "nz.export.ctrlchars";
 
   // cmd line args
   public static final String NZ_MAXERRORS_ARG = "nz-maxerrors";
   public static final String NZ_LOGDIR_ARG = "nz-logdir";
+  public static final String NZ_CTRLCHARS_ARG = "nz-ctrlchars";
 
   // Catalog query for looking up object types
   private static final String QUERY_OBJECTY_TYPE = "SELECT OBJTYPE FROM "
@@ -285,6 +287,7 @@ public class DirectNetezzaManager extends NetezzaManager {
     // Connection args (common)
     RelatedOptions nzOpts = new RelatedOptions(
         "Netezza Connector specific arguments");
+
     nzOpts.addOption(OptionBuilder.withArgName(NZ_MAXERRORS_CONF).hasArg()
         .withDescription("Specify the maximum Netezza Connector "
             + "specific errors")
@@ -294,6 +297,11 @@ public class DirectNetezzaManager extends NetezzaManager {
         .withDescription("Specify the log directory where Netezza Connector "
             + "will place the nzlog and nzbad files")
             .withLongOpt(NZ_LOGDIR_ARG).create());
+
+    nzOpts.addOption(OptionBuilder
+      .withArgName(NZ_CTRLCHARS_CONF)
+      .withDescription("Pass CTRLCHARS option to nzLoad")
+      .withLongOpt(NZ_CTRLCHARS_ARG).create());
 
     return nzOpts;
   }
@@ -318,6 +326,11 @@ public class DirectNetezzaManager extends NetezzaManager {
     if (in.hasOption(NZ_LOGDIR_ARG)) {
       String logDir = in.getOptionValue(NZ_LOGDIR_ARG);
       conf.set(NZ_LOGDIR_CONF, logDir);
+    }
+
+    // CTRLCHARS
+    if (in.hasOption(NZ_CTRLCHARS_ARG)) {
+      conf.setBoolean(NZ_CTRLCHARS_CONF, true);
     }
   }
 }
