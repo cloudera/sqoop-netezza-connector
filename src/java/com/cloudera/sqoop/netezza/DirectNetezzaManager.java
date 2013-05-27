@@ -38,11 +38,13 @@ public class DirectNetezzaManager extends NetezzaManager {
   // Hadoop Configuration key
   public static final String NZ_MAXERRORS_CONF = "nz.export.maxerrors";
   public static final String NZ_LOGDIR_CONF = "nz.export.logdir";
+  public static final String NZ_UPLOADDIR_CONF = "nz.export.uploaddir";
   public static final String NZ_CTRLCHARS_CONF = "nz.export.ctrlchars";
 
   // cmd line args
   public static final String NZ_MAXERRORS_ARG = "nz-maxerrors";
   public static final String NZ_LOGDIR_ARG = "nz-logdir";
+  public static final String NZ_UPLOADDIR_ARG = "nz-uploaddir";
   public static final String NZ_CTRLCHARS_ARG = "nz-ctrlchars";
 
   // Catalog query for looking up object types
@@ -299,6 +301,11 @@ public class DirectNetezzaManager extends NetezzaManager {
             .withLongOpt(NZ_LOGDIR_ARG).create());
 
     nzOpts.addOption(OptionBuilder
+      .withArgName(NZ_UPLOADDIR_CONF).hasArg()
+      .withDescription("HDFS directory where Netezza Connector should upload Netezza logs")
+      .withLongOpt(NZ_UPLOADDIR_ARG).create());
+
+    nzOpts.addOption(OptionBuilder
       .withArgName(NZ_CTRLCHARS_CONF)
       .withDescription("Pass CTRLCHARS option to nzLoad")
       .withLongOpt(NZ_CTRLCHARS_ARG).create());
@@ -326,6 +333,12 @@ public class DirectNetezzaManager extends NetezzaManager {
     if (in.hasOption(NZ_LOGDIR_ARG)) {
       String logDir = in.getOptionValue(NZ_LOGDIR_ARG);
       conf.set(NZ_LOGDIR_CONF, logDir);
+    }
+
+    // UPLOADDIR option
+    if (in.hasOption(NZ_UPLOADDIR_ARG)) {
+      String uploadDir = in.getOptionValue(NZ_UPLOADDIR_ARG);
+      conf.set(NZ_UPLOADDIR_CONF, uploadDir);
     }
 
     // CTRLCHARS

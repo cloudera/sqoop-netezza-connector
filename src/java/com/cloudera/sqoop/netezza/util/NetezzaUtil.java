@@ -6,14 +6,20 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import com.cloudera.sqoop.netezza.DirectNetezzaManager;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 /**
  * Convenience methods for Netezza connector.
  */
 public final class NetezzaUtil {
+
+  public static final Log LOG = LogFactory.getLog(NetezzaUtil.class.getName());
 
   // List of items that needs to be de-escaped in order to be consistent with
   // upstream sqoop interpretation of the NULL string related parameters.
@@ -42,8 +48,8 @@ public final class NetezzaUtil {
    */
   public static void createLogDirectoryIfSpecified(Configuration conf)
       throws IOException {
-    String logDir = conf.get(DirectNetezzaManager.NZ_LOGDIR_CONF);
-    if (logDir != null && logDir.trim().length() > 0) {
+    if (isNzLogEnabled(conf)) {
+      String logDir = conf.get(DirectNetezzaManager.NZ_LOGDIR_CONF);
       File logDirFile = new File(logDir);
 
       // Always call mkdirs to avoid a duplicate redundant exists() check
@@ -56,6 +62,54 @@ public final class NetezzaUtil {
         throw new IOException("Specified LOGDIR is invalid: " + logDir);
       }
     }
+  }
+
+  /**
+   * Uploads Netezza logs into HDFS directory.
+   *
+   * @param configuration Job configuration
+   * @param prefix Prefix for all uploaded files
+   */
+  public static void uploadLogsToHdfsIfSpecified(Configuration configuration, String prefix) {
+    if (!isNzLogEnabled(configuration)) {
+      LOG.info("Netezza logging is disabled, skipping uploading logs.");
+      return;
+    }
+
+    if(!isNzLogUploadEnabled(configuration)) {
+      LOG.info("Netezza log upload is disabled, skipping uploading logs.");
+      return;
+    }
+
+    String logDir = configuration.get(DirectNetezzaManager.NZ_LOGDIR_CONF);
+    String uploadDir = configuration.get(DirectNetezzaManager.NZ_UPLOADDIR_CONF);
+
+    FileSystem fs = null;
+    try {
+      fs = FileSystem.get(configuration);
+    } catch (IOException e) {
+      LOG.error("Can't upload logs to HDFS", e);
+      return;
+    }
+
+    for(File file : new File(logDir).listFiles()) {
+      LOG.info("Uploading file " + file);
+      try {
+        fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(uploadDir, prefix + '-' + file.getName() ));
+      } catch (IOException e) {
+        LOG.error("Can't upload file: " + file, e);
+      }
+    }
+  }
+
+  public static boolean isNzLogEnabled(Configuration configuration) {
+    String logDir = configuration.get(DirectNetezzaManager.NZ_LOGDIR_CONF);
+    return logDir != null && logDir.trim().length() > 0;
+  }
+
+  public static boolean isNzLogUploadEnabled(Configuration configuration) {
+    String logDir = configuration.get(DirectNetezzaManager.NZ_UPLOADDIR_CONF);
+    return logDir != null && logDir.trim().length() > 0;
   }
 
   /**

@@ -7,11 +7,12 @@ import java.io.FileFilter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.Assert;
 
 import com.cloudera.sqoop.SqoopOptions;
 
@@ -20,8 +21,7 @@ import com.cloudera.sqoop.SqoopOptions;
  */
 public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
 
-  public static final Log LOG = LogFactory.getLog(TestNetezzaDirectExport.class
-      .getName());
+  public static final Log LOG = LogFactory.getLog(TestNetezzaDirectExport.class.getName());
 
   protected String getTablePrefix() {
     return "NZ_DIRECT_TBL_";
@@ -115,42 +115,85 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     String logDirPath = f.getAbsolutePath() + ".dir";
     f.delete();
 
-    String[] extraArgs = { "--", "--nz-maxerrors", "2", "--nz-logdir",
-        logDirPath, };
+    String[] extraArgs = {
+      "--",
+      "--nz-maxerrors", "2",
+      "--nz-logdir", logDirPath,
+    };
 
     runExport(options, p, extraArgs);
 
+    assertLogs(logDirPath, 1, 1);
+
+    FileSystem lfs = FileSystem.getLocal(conf);
+    lfs.delete(new Path(logDirPath), true);
+  }
+
+  public void testUploadDir() throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    options.setInputFieldsTerminatedBy('|');
+    Configuration conf = options.getConf();
+
+    createTableForType("INTEGER");
+    Path p = new Path(getBasePath(), "badrec.txt");
+    writeFileWithLine(conf, p, "1|twenty");
+    writeFileWithLine(conf, p, "2|ten");
+    File f = File.createTempFile("test", "nzexport.tmp");
+    String logDirPath = f.getAbsolutePath() + ".dir";
+    String uploadDirPath = f.getAbsolutePath() + ".upload.dir";
+    f.delete();
+
+    String[] extraArgs = {
+      "--",
+      "--nz-maxerrors", "2",
+      "--nz-logdir", logDirPath,
+      "--nz-uploaddir", uploadDirPath
+    };
+
+    runExport(options, p, extraArgs);
+
+    assertLogs(logDirPath, 1, 1);
+    assertLogs(uploadDirPath, 1, 1);
+
+    FileSystem lfs = FileSystem.getLocal(conf);
+    lfs.delete(new Path(logDirPath), true);
+    lfs.delete(new Path(uploadDirPath), true);
+  }
+
+  /**
+   * Assert Netezza logs.
+   *
+   * @param logDirPath Log directory
+   * @param numBadFiles Number of bad files
+   * @param numLogFiles Number of log files
+   *
+   * @throws Exception
+   */
+  public static void assertLogs(String logDirPath, int numBadFiles, int numLogFiles) throws Exception {
     File dir = new File(logDirPath);
     Assert.assertTrue(dir.exists());
 
     File[] badRecordFiles = dir.listFiles(new FileFilter() {
-
       @Override
       public boolean accept(File pathname) {
         return pathname != null
-            && pathname.getName().toLowerCase().endsWith(".nzbad");
-      } });
+          && pathname.getName().toLowerCase().endsWith(".nzbad");
+      }
+    });
 
     Assert.assertNotNull(badRecordFiles);
-    Assert.assertEquals(1, badRecordFiles.length);
+    Assert.assertEquals(numBadFiles, badRecordFiles.length);
 
     File[] logFiles = dir.listFiles(new FileFilter() {
-
       @Override
       public boolean accept(File pathname) {
         return pathname != null
-            && pathname.getName().toLowerCase().endsWith(".nzlog");
+          && pathname.getName().toLowerCase().endsWith(".nzlog");
       }
-
     });
 
     Assert.assertNotNull(logFiles);
-    Assert.assertEquals(1, logFiles.length);
-
-    // cleanup
-    logFiles[0].delete();
-    badRecordFiles[0].delete();
-    dir.delete();
+    Assert.assertEquals(numLogFiles, logFiles.length);
   }
 
   public void testNullSubstitutionString() throws Exception {

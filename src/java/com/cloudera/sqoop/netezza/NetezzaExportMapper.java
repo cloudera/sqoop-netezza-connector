@@ -60,6 +60,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
   private class JdbcThread extends Thread {
     private SQLException sqlException;
     private Connection conn;
+    private Context context;
 
     public JdbcThread() {
       this.conn = null;
@@ -150,6 +151,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
             // Exception closing the connection does not fail the task.
             LOG.error("Exception closing connection: " + sqlE);
           }
+          NetezzaUtil.uploadLogsToHdfsIfSpecified(conf, context.getTaskAttemptID().toString());
         }
       }
     }
@@ -162,7 +164,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
    * Create a named FIFO, and bind the JDBC connection to the FIFO.
    * A File object representing the FIFO is in 'fifoFile'.
    */
-  private void initExportProcess() throws IOException {
+  private void initExportProcess(Context context) throws IOException {
     // Create the FIFO where we'll put the data.
     File taskAttemptDir = TaskId.getLocalWorkPath(conf);
     this.fifoFile = new File(taskAttemptDir, "netezza.txt");
@@ -174,6 +176,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
     // and opens the read side of the FIFO.
     this.jdbcThread = new JdbcThread();
     this.jdbcThread.setDaemon(true);
+    this.jdbcThread.context = context;
     try {
       this.jdbcThread.initConnection();
     } catch (SQLException sqlE) {
@@ -192,7 +195,7 @@ public class NetezzaExportMapper<KEYIN, VALIN>
   @Override
   public void run(Context context) throws IOException, InterruptedException {
     setup(context);
-    initExportProcess();
+    initExportProcess(context);
     try {
       while (context.nextKeyValue()) {
         map(context.getCurrentKey(), context.getCurrentValue(), context);

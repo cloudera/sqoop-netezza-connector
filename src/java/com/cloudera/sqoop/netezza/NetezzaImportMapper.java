@@ -49,6 +49,7 @@ public class NetezzaImportMapper
     private SQLException sqlException;
     private Connection conn;
     private int sliceId;
+    private Context context;
 
     public JdbcThread(int slice) {
       this.conn = null;
@@ -172,6 +173,7 @@ public class NetezzaImportMapper
             LOG.error("Exception closing connection: " + sqlE);
           }
         }
+        NetezzaUtil.uploadLogsToHdfsIfSpecified(conf, context.getTaskAttemptID().toString());
       }
     }
   }
@@ -183,7 +185,7 @@ public class NetezzaImportMapper
    * Create a named FIFO, and bind the JDBC connection to the FIFO.
    * A File object representing the FIFO is in 'fifoFile'.
    */
-  private void initImportProcess(int slice) throws IOException {
+  private void initImportProcess(int slice, Context context) throws IOException {
     // Create the FIFO where we'll put the data.
     File taskAttemptDir = TaskId.getLocalWorkPath(conf);
     this.fifoFile = new File(taskAttemptDir, "netezza-" + slice + ".txt");
@@ -195,6 +197,7 @@ public class NetezzaImportMapper
     // and opens the read side of the FIFO.
     this.jdbcThread = new JdbcThread(slice);
     this.jdbcThread.setDaemon(true);
+    this.jdbcThread.context = context;
     try {
       this.jdbcThread.initConnection();
     } catch (SQLException sqlE) {
@@ -222,7 +225,7 @@ public class NetezzaImportMapper
             MySQLUtils.OUTPUT_RECORD_DELIM_KEY, '\n');
     String recordDelim = "" + recordDelimChar;
 
-    initImportProcess(slice);
+    initImportProcess(slice, context);
     try {
       String line = this.importReader.readLine();
       while (null != line) {
