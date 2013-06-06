@@ -380,6 +380,22 @@ public class TestNetezzaJdbcExport extends TestCase {
       }
     });
   }
+
+  public void testUTFExport() throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    Configuration conf = options.getConf();
+
+    createTableForType("NVARCHAR(64)");
+    Path p = new Path(getBasePath(), "strY.txt");
+    writeFileWithLine(conf, p, "1,žluťoučký kůň"); // Yellow horse in Czech
+    runExport(options, p);
+    checkValForId(1, new Checker() {
+      public void check(ResultSet rs) throws SQLException {
+        assertEquals("žluťoučký kůň", rs.getString(1)); // Yellow horse in Czech
+      }
+    });
+  }
+
 }
 
 

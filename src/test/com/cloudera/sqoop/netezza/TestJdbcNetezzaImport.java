@@ -430,5 +430,14 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "3,z");
   }
 
+  public void testUTF8Import() throws Exception {
+    final String TABLE_NAME = "NCHAR_TABLE";
+    createTable(conn, TABLE_NAME, "INTEGER", "NVARCHAR(50)");
+    addRow(conn, TABLE_NAME, "1", "'žluťoučký kůň'"); // Yellow Horse in Czech
+
+    runImport(options, TABLE_NAME);
+    verifyImportCount(TABLE_NAME, 1);
+    verifyImportLine(TABLE_NAME, "1,žluťoučký kůň"); // Yellow Horse in Czech
+  }
 }
 
