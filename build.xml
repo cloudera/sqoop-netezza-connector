@@ -47,6 +47,12 @@
   <property name="test.output" value="no"/>
   <property name="test.timeout" value="1800000"/>
 
+  <!-- Remote testing machine -->
+  <property name="sqoop.netezza.host" value="nzhost" />
+  <property name="sqoop.netezza.db" value="sqooptestdb" />
+  <property name="sqoop.netezza.user" value="SQOOPTEST" />
+  <property name="sqoop.netezza.password" value="sqooptest" />
+
   <!-- static analysis -->
   <property name="findbugs.out.dir" value="${build.dir}/findbugs" />
   <property name="findbugs.output.xml.file"
@@ -316,6 +322,12 @@
            execution of multiple Hudson builders
       -->
       <sysproperty key="hadoop.tmp.dir" value="${build.test}/hadoop"/>
+
+      <!-- Remote testing machine -->
+      <sysproperty key="sqoop.netezza.host" value="${sqoop.netezza.host}" />
+      <sysproperty key="sqoop.netezza.db" value="${sqoop.netezza.db}" />
+      <sysproperty key="sqoop.netezza.user" value="${sqoop.netezza.user}" />
+      <sysproperty key="sqoop.netezza.password" value="${sqoop.netezza.password}" />
 
       <sysproperty key="fs.default.name" value="${fs.default.name}"/>
       <sysproperty key="hadoop.test.localoutputfile"

@@ -34,16 +34,16 @@ public class NzTestUtil {
   private static final Log LOG = LogFactory.getLog(NzTestUtil.class.getName());
 
   /** Hostname in /etc/hosts for the Netezza test database. */
-  public static final String NETEZZA_HOST = "nzhost";
+  public static final String NETEZZA_HOST = System.getProperty("sqoop.netezza.host", "nzhost");
 
   /** DB schema to use on the host. */
-  public static final String NETEZZA_DB = "sqooptestdb";
+  public static final String NETEZZA_DB = System.getProperty("sqoop.netezza.db", "sqooptestdb");
 
   /** Netezza DB username. */
-  public static final String NETEZZA_USER = "SQOOPTEST";
+  public static final String NETEZZA_USER = System.getProperty("sqoop.netezza.user", "SQOOPTEST");
 
   /** Netezza DB password. */
-  public static final String NETEZZA_PASS = "sqooptest";
+  public static final String NETEZZA_PASS = System.getProperty("sqoop.netezza.password", "sqooptest");
 
   // Due to a bug holding connections open within the same process, we need to
   // login as admin and clear state between tests using the 'nzsession'
