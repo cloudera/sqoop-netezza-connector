@@ -87,6 +87,9 @@ public class DirectNetezzaManager extends NetezzaManager {
           "Bad arguments with netezza specific options", e);
     }
 
+    // Validate parameter compatiblitiy
+    validateParameterCompatibility(options);
+
     // Netezza specific validations
     validateTargetObjectType();
 
@@ -345,5 +348,28 @@ public class DirectNetezzaManager extends NetezzaManager {
     if (in.hasOption(NZ_CTRLCHARS_ARG)) {
       conf.setBoolean(NZ_CTRLCHARS_CONF, true);
     }
+  }
+
+  /**
+   * Verify compatibility of this connector with user entered parameters.
+   *
+   * @param options User entered parsed command line arguments
+   */
+  public void validateParameterCompatibility(SqoopOptions options) {
+    if(options.getHBaseTable() != null) {
+      throwIllegalArgumentException("--hbase-table");
+    }
+
+    if(options.getFileLayout() == SqoopOptions.FileLayout.AvroDataFile) {
+      throwIllegalArgumentException("--as-avrodatafile");
+    }
+
+    if(options.getFileLayout() == SqoopOptions.FileLayout.SequenceFile) {
+      throwIllegalArgumentException("--as-sequencefile");
+    }
+  }
+
+  private void throwIllegalArgumentException(String option) {
+    throw new IllegalArgumentException("Unsupported argument: " + option);
   }
 }

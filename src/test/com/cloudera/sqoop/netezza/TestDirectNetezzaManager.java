@@ -137,4 +137,37 @@ public class TestDirectNetezzaManager extends TestCase {
     // De-escaping
     m.propagateNullSubstituteValues("\\\\N", null, configuration);
     assertEquals("\\N", configuration.get(PROPERTY_NULL_STRING));
-  }}
+  }
+
+  public void testValidateParameterCompatibilityHBase() throws Exception {
+    SqoopOptions opts = new SqoopOptions();
+    opts.setHBaseTable("table");
+
+    runTestValidateparameterCompatibility(opts, "--hbase-table");
+  }
+
+  public void testValidateParameterCompatibilityAvro() throws Exception {
+    SqoopOptions opts = new SqoopOptions();
+    opts.setFileLayout(SqoopOptions.FileLayout.AvroDataFile);
+
+    runTestValidateparameterCompatibility(opts, "--as-avrodatafile");
+  }
+
+  public void testValidateParameterCompatibilitySequence() throws Exception {
+    SqoopOptions opts = new SqoopOptions();
+    opts.setFileLayout(SqoopOptions.FileLayout.SequenceFile);
+
+    runTestValidateparameterCompatibility(opts, "--as-sequencefile");
+  }
+
+  private void runTestValidateparameterCompatibility(SqoopOptions opts, String param) throws Exception {
+    DirectNetezzaManager m = new DirectNetezzaManager(opts);
+
+    try {
+      m.validateParameterCompatibility(opts);
+      fail("Expected exception!");
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains(param));
+    }
+  }
+}
