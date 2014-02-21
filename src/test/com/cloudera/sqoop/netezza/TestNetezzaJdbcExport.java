@@ -207,7 +207,8 @@ public class TestNetezzaJdbcExport extends TestCase {
 
   protected void runExport(SqoopOptions options, Path p, String[] sqoopArgs)
     throws Exception {
-    options.setExplicitDelims(true);
+    options.setExplicitOutputDelims(true);
+    options.setExplicitInputDelims(true);
     options.setExportDir(p.toString());
     options.setInputLinesTerminatedBy('\n');
     options.setInputEscapedBy('\\');
