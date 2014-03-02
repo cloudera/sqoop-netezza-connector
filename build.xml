@@ -37,6 +37,9 @@
   <property name="dist.dir" location="${build.dir}/${artifact.name}" />
   <property name="tar.file" location="${build.dir}/${artifact.name}.tar.gz" />
 
+  <!-- Parcel related properties -->
+  <property name="parcel.name" value="SQOOP_CONNECTOR_NETEZZA-${version}" />
+
   <!-- compilation -->
   <property name="javac.deprecation" value="off"/>
   <property name="javac.debug" value="on"/>
@@ -116,8 +119,15 @@
   <property name="ivy.artifact.retrieve.pattern"
              value="${name}/[conf]/[artifact]-[revision](-[classifier]).[ext]"/>
 
-  <!-- load ant-contrib tasks to get the "if" task. -->
+  <!-- ant-contrib: "if" task-->
   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="${basedir}/lib/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+
+  <!-- ant-contrib: "for" task-->
+  <taskdef resource="net/sf/antcontrib/antlib.xml">
     <classpath>
       <pathelement location="${basedir}/lib/ant-contrib-1.0b3.jar"/>
     </classpath>
@@ -235,6 +245,62 @@
         <include name="${artifact.name}/**/*.sh" />
       </tarfileset>
     </tar>
+  </target>
+
+  <target name="parcel" depends="tar" description="Create parcels">
+    <!-- Clean up -->
+    <delete dir="${build.dir}/${parcel.name}"/>
+
+    <!-- Mkdir -->
+    <mkdir dir="${build.dir}/${parcel.name}"/>
+    <mkdir dir="${build.dir}/${parcel.name}/meta"/>
+    <mkdir dir="${build.dir}/${parcel.name}/lib"/>
+    <mkdir dir="${build.dir}/${parcel.name}/managers.d"/>
+
+    <!-- Copy static files over -->
+    <copy file="LICENSE.txt" tofile="${build.dir}/${parcel.name}/LICENSE.txt" />
+    <copy file="${build.dir}/${dest.jar}" tofile="${build.dir}/${parcel.name}/${dest.jar}" />
+    <copy file="src/parcel/meta/sqoop_env.sh" tofile="${build.dir}/${parcel.name}/meta/sqoop_env.sh" />
+
+    <!-- Copy dynamic files over -->
+    <exec executable="src/substitute.sh">
+      <arg value="src/parcel/managers.d/ccfn"/>
+      <arg value="${build.dir}/${parcel.name}/managers.d/ccfn"/>
+      <arg value="s/JAR/${dest.jar}/"/>
+    </exec>
+
+    <!-- Pre-prepare the parcel.json file, it will require further tweaks for each distro -->
+    <exec executable="src/substitute.sh">
+      <arg value="src/parcel/meta/parcel.json"/>
+      <arg value="${build.dir}/parcel.json"/>
+      <arg value="s/VERSION/${version}/"/>
+    </exec>
+
+    <!-- For each supported distro, finalize the parcel -->
+    <for list="el5,el6,precise,sles11,wheezy" param="distro">
+      <sequential>
+        <echo>Working on distro: @{distro}</echo>
+
+        <!-- Distro-specific parcel.json file -->
+        <exec executable="src/substitute.sh">
+          <arg value="${build.dir}/parcel.json"/>
+          <arg value="${build.dir}/${parcel.name}/meta/parcel.json"/>
+          <arg value="s/DISTRO/@{distro}/"/>
+        </exec>
+
+        <!-- Final parcel archive -->
+        <tar destfile="${build.dir}/${parcel.name}-@{distro}.parcel" compression="gzip">
+          <tarfileset dir="${build.dir}/${parcel.name}" prefix="${parcel.name}" filemode="755">
+            <include name="**/*.sh" />
+          </tarfileset>
+
+          <tarfileset dir="${build.dir}/${parcel.name}" prefix="${parcel.name}">
+            <include name="**/*" />
+            <exclude name="**/*.sh" />
+          </tarfileset>
+        </tar>
+      </sequential>
+    </for>  
   </target>
 
   <!-- set variables that configure the actual test -->
