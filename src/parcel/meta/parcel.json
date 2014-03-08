@@ -1,6 +1,6 @@
 {
   "schema_version":     1,
-  "name":               "SQOOP_CONNECTOR_NETEZZA",
+  "name":               "SQOOP_NETEZZA_CONNECTOR",
   "version":            "VERSION",
   "extraVersionInfo": {
     "fullVersion":        "VERSION-DISTRO",

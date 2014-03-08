@@ -38,7 +38,7 @@
   <property name="tar.file" location="${build.dir}/${artifact.name}.tar.gz" />
 
   <!-- Parcel related properties -->
-  <property name="parcel.name" value="SQOOP_CONNECTOR_NETEZZA-${version}" />
+  <property name="parcel.name" value="SQOOP_NETEZZA_CONNECTOR-${version}" />
 
   <!-- compilation -->
   <property name="javac.deprecation" value="off"/>
