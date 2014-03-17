@@ -281,6 +281,9 @@
       <sequential>
         <echo>Working on distro: @{distro}</echo>
 
+        <!-- Clean up -->
+        <delete file="target/${parcel.name}-@{distro}.parcel"/>
+
         <!-- Distro-specific parcel.json file -->
         <exec executable="src/substitute.sh">
           <arg value="${build.dir}/parcel.json"/>
@@ -297,6 +300,23 @@
           <tarfileset dir="${build.dir}/${parcel.name}" prefix="${parcel.name}">
             <include name="**/*" />
             <exclude name="**/*.sh" />
+          </tarfileset>
+        </tar>
+
+        <!-- Our subsequent parcel repo script require to have separate meta tarball -->
+
+        <!-- Clean up -->
+        <delete dir="${build.dir}/${parcel.name}-@{distro}-meta" />
+
+        <!-- Generate the metadata tarball content -->
+        <mkdir dir="${build.dir}/${parcel.name}-@{distro}-meta" />
+        <copy todir="${build.dir}/${parcel.name}-@{distro}-meta">
+          <fileset dir="${build.dir}/${parcel.name}/meta/"/>
+        </copy>
+
+        <tar destfile="${build.dir}/${parcel.name}-@{distro}.parcel.meta.tar.gz" compression="gzip">
+          <tarfileset dir="${build.dir}/${parcel.name}-@{distro}-meta" prefix="${parcel.name}-@{distro}-meta">
+            <include name="**/*" />
           </tarfileset>
         </tar>
       </sequential>
