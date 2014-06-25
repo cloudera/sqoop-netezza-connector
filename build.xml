@@ -44,6 +44,9 @@
   <property name="javac.deprecation" value="off"/>
   <property name="javac.debug" value="on"/>
   <property name="build.encoding" value="ISO-8859-1"/>
+  <property name="javac.source" value="1.6"/>
+  <property name="javac.target" value="1.6"/>
+
 
   <!-- testing with JUnit -->
   <property name="test.junit.output.format" value="plain"/>
@@ -180,6 +183,8 @@
 
     <!-- Compile the main code. -->
     <javac
+        source="${javac.source}"
+        target="${javac.target}"
         encoding="${build.encoding}"
         srcdir="${src.dir}"
         includes="**/*.java"
@@ -195,6 +200,8 @@
       description="Compile test classes">
     <mkdir dir="${build.test.classes}" />
     <javac
+        source="${javac.source}"
+        target="${javac.target}"
         encoding="${build.encoding}"
         srcdir="${test.dir}"
         includes="**/*.java"
