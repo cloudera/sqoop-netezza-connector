@@ -144,16 +144,16 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
               + DirectNetezzaManager.ERROR_MESSAGE_TABLE_SUPPORT_ONLY));
   }
 
-  public void testNullSubstitutionString() throws Exception {
+  public void testNullBehavior() throws Exception {
     // Ensure that we're correctly supporting NULL substitutions
     final String TABLE_NAME = "NULL_SUBSTITUTION";
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "null");
+    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)", "INTEGER", "VARCHAR(32)");
+    addRow(conn, TABLE_NAME, "1", "null", "null", "'value'");
     options.setNullStringValue("\\\\N");
 
     runImport(options, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 1);
-    verifyImportLine(TABLE_NAME, "1,\\N");
+    verifyImportLine(TABLE_NAME, "1,\\N,,value");
   }
 }
 
