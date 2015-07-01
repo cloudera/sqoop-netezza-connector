@@ -5,5 +5,9 @@
 /.settings
 /tags
 /build.properties
+*.ipr
+*.iws
+*.iml
+*.ids
 *~
 
