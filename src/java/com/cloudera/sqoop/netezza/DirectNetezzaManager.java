@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
@@ -19,13 +17,14 @@ import org.apache.hadoop.conf.Configuration;
 
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.SqoopOptions.InvalidOptionsException;
-import com.cloudera.sqoop.cli.RelatedOptions;
 import com.cloudera.sqoop.manager.ExportJobContext;
 import com.cloudera.sqoop.manager.ImportJobContext;
 import com.cloudera.sqoop.util.ExportException;
 import com.cloudera.sqoop.util.ImportException;
 
 import com.cloudera.sqoop.netezza.util.NetezzaUtil;
+import org.apache.sqoop.cli.RelatedOptions;
+
 import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
 
 /**
@@ -51,6 +50,9 @@ public class DirectNetezzaManager extends NetezzaManager {
   private static final String QUERY_OBJECTY_TYPE = "SELECT OBJTYPE FROM "
       + "_V_OBJECTS WHERE OBJNAME = ? AND OWNER = ?";
 
+  private static final String QUERY_OBJECTY_TYPE_WITH_SCHEMA = "SELECT OBJTYPE FROM "
+      + "_V_OBJECTS WHERE OBJNAME = ? AND OWNER = ? AND SCHEMA = ?";
+
   // Error message used for indicating that only Table based import export
   // is allowed. This is needed as a constant to ensure correct working of
   // tests that assert this functionality.
@@ -58,7 +60,6 @@ public class DirectNetezzaManager extends NetezzaManager {
       "The direct mode of operation can only work with "
           + "real tables. Using it against view or other types is not "
           + "supported.";
-
 
   public DirectNetezzaManager(final SqoopOptions opts) {
     super(opts);
@@ -78,7 +79,10 @@ public class DirectNetezzaManager extends NetezzaManager {
     // set netezza specific settings in context's sqoop options.
     String[] extras = options.getExtraArgs();
     try {
-      parseExtraArgs(extras, options.getConf());
+      CommandLine parser = getParser(extras);
+      if (parser != null) {
+        applyCliOptions(parser, options.getConf());
+      }
     } catch (ParseException e) {
       throw new IllegalArgumentException(
           "Bad arguments with netezza specific options", e);
@@ -178,8 +182,14 @@ public class DirectNetezzaManager extends NetezzaManager {
     try {
       conn = getConnection();
 
-      pstmt = conn.prepareStatement(QUERY_OBJECTY_TYPE,
-          ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+      if (getSchema() != null) {
+        pstmt = conn.prepareStatement(QUERY_OBJECTY_TYPE_WITH_SCHEMA,
+            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        pstmt.setString(3, getSchema());
+      } else {
+        pstmt = conn.prepareStatement(QUERY_OBJECTY_TYPE,
+            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+      }
 
       pstmt.setString(1, shortTableName);
       pstmt.setString(2, owner);
@@ -226,7 +236,10 @@ public class DirectNetezzaManager extends NetezzaManager {
     // set netezza specific settings in context's sqoop options.
     String[] extras = context.getOptions().getExtraArgs();
     try {
-      parseExtraArgs(extras, context.getOptions().getConf());
+      CommandLine parser = getParser(extras);
+      if (parser != null) {
+        applyCliOptions(parser, context.getOptions().getConf());
+      }
     } catch (ParseException e) {
       throw new IllegalArgumentException(
           "Bad arguments with netezza specific options", e);
@@ -265,33 +278,11 @@ public class DirectNetezzaManager extends NetezzaManager {
   }
 
   /**
-   * Parse extra args, set approriate values in conf so they can be read by job.
-   *
-   * @param args
-   * @param conf
-   * @throws ParseException
-   * @throws InvalidOptionsException
-   */
-  void parseExtraArgs(String[] args, Configuration conf) throws ParseException,
-      InvalidOptionsException {
-    if (args == null || args.length == 0) {
-      // no extras? then ignore.
-      return;
-    }
-    String[] toolArgs = args; // args after generic parser is done.
-    CommandLineParser parser = new GnuParser(); // new SqoopParser();
-    CommandLine cmdLine = parser.parse(getNZOptions(), toolArgs, true);
-    applyCliOptions(cmdLine, conf);
-  }
-
-  /**
    * @return NZ related command line options used by cli parser
    */
   @SuppressWarnings("static-access")
-  RelatedOptions getNZOptions() {
-    // Connection args (common)
-    RelatedOptions nzOpts = new RelatedOptions(
-        "Netezza Connector specific arguments");
+  protected RelatedOptions getExtraOptions() {
+    RelatedOptions nzOpts = super.getExtraOptions();
 
     nzOpts.addOption(OptionBuilder.withArgName(NZ_MAXERRORS_CONF).hasArg()
         .withDescription("Specify the maximum Netezza Connector "
@@ -301,17 +292,17 @@ public class DirectNetezzaManager extends NetezzaManager {
     nzOpts.addOption(OptionBuilder.withArgName(NZ_LOGDIR_CONF).hasArg()
         .withDescription("Specify the log directory where Netezza Connector "
             + "will place the nzlog and nzbad files")
-            .withLongOpt(NZ_LOGDIR_ARG).create());
+        .withLongOpt(NZ_LOGDIR_ARG).create());
 
     nzOpts.addOption(OptionBuilder
-      .withArgName(NZ_UPLOADDIR_CONF).hasArg()
-      .withDescription("HDFS directory where Netezza Connector should upload Netezza logs")
-      .withLongOpt(NZ_UPLOADDIR_ARG).create());
+        .withArgName(NZ_UPLOADDIR_CONF).hasArg()
+        .withDescription("HDFS directory where Netezza Connector should upload Netezza logs")
+        .withLongOpt(NZ_UPLOADDIR_ARG).create());
 
     nzOpts.addOption(OptionBuilder
-      .withArgName(NZ_CTRLCHARS_CONF)
-      .withDescription("Pass CTRLCHARS option to nzLoad")
-      .withLongOpt(NZ_CTRLCHARS_ARG).create());
+        .withArgName(NZ_CTRLCHARS_CONF)
+        .withDescription("Pass CTRLCHARS option to nzLoad")
+        .withLongOpt(NZ_CTRLCHARS_ARG).create());
 
     return nzOpts;
   }
@@ -323,7 +314,7 @@ public class DirectNetezzaManager extends NetezzaManager {
    * @param conf
    * @throws InvalidOptionsException
    */
-  protected void applyCliOptions(CommandLine in, Configuration conf)
+  void applyCliOptions(CommandLine in, Configuration conf)
       throws InvalidOptionsException {
 
     // MAXERRORS option

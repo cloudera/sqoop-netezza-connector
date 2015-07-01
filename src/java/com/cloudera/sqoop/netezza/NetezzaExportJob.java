@@ -54,7 +54,7 @@ public class NetezzaExportJob extends ExportJobBase {
     }
 
     DataDrivenDBInputFormat.setInput(job, DBWritable.class,
-        tableName, null, null, new String[0]);
+        mgr.escapeTableName(tableName), null, null, new String[0]);
 
     char field = options.getInputFieldDelim();
     char record = options.getInputRecordDelim();

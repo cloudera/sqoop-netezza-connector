@@ -9,10 +9,14 @@ import java.io.InputStreamReader;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -252,6 +256,27 @@ public class NzTestUtil {
     }
   }
 
+  public static void dropSchemaIfExists(Connection conn, String schema)
+      throws SQLException {
+    PreparedStatement s = null;
+    try {
+      s = conn.prepareStatement("DROP SCHEMA " + schema + " CASCADE");
+      s.executeUpdate();
+      conn.commit();
+    } catch (SQLException sqlE) {
+      // DROP TABLE may not succeed; the table might not exist. Just continue.
+      LOG.warn("Ignoring SQL Exception dropping schema " + schema
+          + " : " + sqlE);
+
+      // Clear current query state.
+      conn.rollback();
+    } finally {
+      if (null != s) {
+        s.close();
+      }
+    }
+  }
+
   public static void dropViewIfExists(Connection conn, String viewName)
       throws SQLException {
     PreparedStatement s = null;
@@ -270,6 +295,74 @@ public class NzTestUtil {
       if (null != s) {
         s.close();
       }
+    }
+  }
+
+  /**
+   * Check if version is at least 7.0.3.
+   * @param conn
+   * @return true if version is newer than 7.0.3.
+   * @throws SQLException
+   */
+  public static boolean supportsMultipleSchema(Connection conn)
+      throws SQLException {
+    Statement s = null;
+    try {
+      s = conn.createStatement();
+      boolean hasResultSet = s.execute("SELECT VERSION()");
+      conn.commit();
+
+      if (hasResultSet) {
+        ResultSet rs = s.getResultSet();
+        rs.next();
+        int[] version = interpretVersion(rs.getString(1));
+
+        if (version != null) {
+          return version[0] > 7
+              || (version[0] == 7 && (version[1] > 0 || (version[2] >= 3)));
+        }
+      } else {
+        LOG.warn("Could not find Netezza version. `SELECT VERSION()` has no results.");
+      }
+    } catch (SQLException sqlE) {
+      // DROP TABLE may not succeed; the table might not exist. Just continue.
+      LOG.warn("Could not find Netezza version.", sqlE);
+
+      // Clear current query state.
+      conn.rollback();
+    } finally {
+      if (null != s) {
+        s.close();
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Interprets a version string.
+   * @param version
+   * @return triplet of version
+   */
+  public static int[] interpretVersion(String version) {
+    if (version == null) {
+      LOG.warn("Could not find Netezza version. `SELECT VERSION()` results could not be interpreted.");
+      return null;
+    }
+
+    Pattern p = Pattern.compile("Release (\\d+)\\.(\\d+)\\.(\\d+).*");
+    Matcher m = p.matcher(version);
+    if (m.matches()) {
+      int major = Integer.parseInt(m.group(1));
+      int minor = Integer.parseInt(m.group(2));
+      int fix = Integer.parseInt(m.group(3));
+      return new int[]{
+          major,
+          minor,
+          fix
+      };
+    } else {
+      return null;
     }
   }
 }

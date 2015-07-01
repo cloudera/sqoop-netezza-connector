@@ -4,8 +4,15 @@ package com.cloudera.sqoop.netezza;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -15,6 +22,7 @@ import com.cloudera.sqoop.manager.GenericJdbcManager;
 import com.cloudera.sqoop.manager.ImportJobContext;
 import com.cloudera.sqoop.util.ExportException;
 import com.cloudera.sqoop.util.ImportException;
+import org.apache.sqoop.cli.RelatedOptions;
 
 /**
  * Manages connections to Netezza EDW.
@@ -24,11 +32,32 @@ public class NetezzaManager extends GenericJdbcManager {
   public static final Log LOG = LogFactory.getLog(
       NetezzaManager.class.getName());
 
+  // Pass schema to Netezza
+  public static final String SCHEMA_ARG = "schema";
+
   // driver class to ensure is loaded when making db connection.
   protected static final String DRIVER_CLASS = "org.netezza.Driver";
 
+  /**
+   * Command line parser for extra args.
+   */
+  private CommandLine parser;
+
+  /*
+   * Netezza schema that we should use.
+   */
+  private String schema;
+
   public NetezzaManager(final SqoopOptions opts) {
     super(DRIVER_CLASS, opts);
+
+    // Try to parse extra arguments
+    try {
+      parseExtraArgs(opts.getExtraArgs());
+    } catch (ParseException e) {
+      throw new RuntimeException("Can't parse extra arguments", e);
+    }
+
   }
 
   @Override
@@ -89,5 +118,104 @@ public class NetezzaManager extends GenericJdbcManager {
     return type;
   }
 
+  @Override
+  public boolean escapeTableNameOnExport() {
+    return true;
+  }
+
+  @Override
+  public String escapeTableName(String tableName) {
+    // Return full table name including schema if needed
+    if (schema != null && !schema.isEmpty()) {
+      return escapeIdentifier(schema) + "." + escapeIdentifier(tableName);
+    }
+
+    return escapeIdentifier(tableName);
+  }
+
+  protected String escapeIdentifier(String identifier) {
+    if (identifier == null) {
+      return null;
+    }
+    return "\"" + identifier.replace("\"", "\"\"") + "\"";
+  }
+
+  public String getSchema() {
+    return schema;
+  }
+
+  /**
+   * Extract extra args from parser.
+   * This method remembers the schema.
+   *
+   * @param cmdLine
+   */
+  void applyExtraArguments(CommandLine cmdLine) {
+    // Apply extra options
+    if (cmdLine.hasOption(SCHEMA_ARG)) {
+      String schemaName = cmdLine.getOptionValue(SCHEMA_ARG);
+      LOG.info("We will use schema " + schemaName);
+
+      this.schema = schemaName;
+    }
+  }
+
+  /**
+   * Create related options for Netezza extra parameters.
+   *
+   * @return
+   */
+  @SuppressWarnings("static-access")
+  RelatedOptions getExtraOptions() {
+    // Connection args (common)
+    RelatedOptions extraOptions =
+        new RelatedOptions("Netezza connector specific arguments");
+
+    extraOptions.addOption(OptionBuilder.withArgName("string").hasArg()
+        .withDescription("Optional schema name")
+        .withLongOpt(SCHEMA_ARG).create());
+
+    return extraOptions;
+  }
+
+  /**
+   * Return a parser with extra args.
+   * @param args
+   * @return CommandLine or null if no arguments provided.
+   */
+  CommandLine getParser(String[] args) throws ParseException {
+    if (parser != null) {
+      return parser;
+    }
+
+    // No-op when no extra arguments are present
+    if (args == null || args.length == 0) {
+      return null;
+    }
+
+    // We do not need extended abilities of SqoopParser, so we're using
+    // Gnu parser instead.
+    CommandLineParser commandLineParser = new GnuParser();
+    parser = commandLineParser.parse(getExtraOptions(), args, true);
+
+    return parser;
+  }
+
+  /**
+   * Parse extra arguments.
+   *
+   * @param args Extra arguments array
+   * @throws ParseException
+   */
+  void parseExtraArgs(String[] args) throws ParseException {
+    CommandLine cmdLine = getParser(args);
+
+    if (cmdLine == null) {
+      return;
+    }
+
+    // Apply parsed arguments
+    applyExtraArguments(cmdLine);
+  }
 }
 

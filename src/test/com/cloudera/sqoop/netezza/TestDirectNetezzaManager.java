@@ -4,6 +4,7 @@ package com.cloudera.sqoop.netezza;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 
@@ -30,7 +31,8 @@ public class TestDirectNetezzaManager extends TestCase {
     DirectNetezzaManager m = new DirectNetezzaManager(opts);
     String[] args = { "--" + DirectNetezzaManager.NZ_MAXERRORS_ARG, "1337" };
     Configuration conf = opts.getConf();
-    m.parseExtraArgs(args, conf);
+    CommandLine parser = m.getParser(args);
+    m.applyCliOptions(parser, conf);
 
     assertEquals("1337", conf.get(DirectNetezzaManager.NZ_MAXERRORS_CONF));
   }
@@ -48,7 +50,8 @@ public class TestDirectNetezzaManager extends TestCase {
     DirectNetezzaManager m = new DirectNetezzaManager(opts);
     String[] args = { "--" + DirectNetezzaManager.NZ_LOGDIR_ARG, "/tmp/nz" };
     Configuration conf = opts.getConf();
-    m.parseExtraArgs(args, conf);
+    CommandLine parser = m.getParser(args);
+    m.applyCliOptions(parser, conf);
 
     assertEquals("/tmp/nz", conf.get(DirectNetezzaManager.NZ_LOGDIR_CONF));
   }
@@ -68,7 +71,8 @@ public class TestDirectNetezzaManager extends TestCase {
         "notANumber", };
     Configuration conf = opts.getConf();
     try {
-      m.parseExtraArgs(args, conf);
+      CommandLine parser = m.getParser(args);
+      m.applyCliOptions(parser, conf);
     } catch (NumberFormatException nfe) {
       // expected
       return;

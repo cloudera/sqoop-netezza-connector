@@ -75,7 +75,7 @@ public class NetezzaImportJob extends ImportJobBase {
     String whereClause = options.getWhereClause();
 
     DataDrivenDBInputFormat.setInput(job, DBWritable.class,
-        tableName, whereClause,
+        mgr.escapeTableName(tableName), whereClause,
         mgr.escapeColName(splitByCol), sqlColNames);
 
     // Check the user's delimiters and warn if they're not the same

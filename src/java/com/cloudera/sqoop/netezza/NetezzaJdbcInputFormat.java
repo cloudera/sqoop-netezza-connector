@@ -21,11 +21,16 @@ package com.cloudera.sqoop.netezza;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.sqoop.mapreduce.DBWritable;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -41,6 +46,9 @@ import com.cloudera.sqoop.config.ConfigurationHelper;
  */
 public class NetezzaJdbcInputFormat<T extends DBWritable>
     extends DataDrivenDBInputFormat<T> implements Configurable {
+
+  public static final Log LOG = LogFactory.getLog(
+      NetezzaJdbcInputFormat.class.getName());
 
   private class DataSliceIdSplitter implements DBSplitter {
     @Override
@@ -62,6 +70,26 @@ public class NetezzaJdbcInputFormat<T extends DBWritable>
     }
   }
 
+  @Override
+  protected RecordReader<LongWritable, T> createDBRecordReader(
+      DBInputSplit split, Configuration conf) throws IOException {
+
+    DBConfiguration dbConf = getDBConf();
+    @SuppressWarnings("unchecked")
+    Class<T> inputClass = (Class<T>) (dbConf.getInputClass());
+    String dbProductName = getDBProductName();
+
+    LOG.debug("Creating db record reader for db product: " + dbProductName);
+
+    try {
+      return new NetezzaRecordReader<T>(split, inputClass,
+          conf, getConnection(), dbConf, dbConf.getInputConditions(),
+          dbConf.getInputFieldNames(), dbConf.getInputTableName(),
+          dbProductName);
+    } catch (SQLException ex) {
+      throw new IOException(ex);
+    }
+  }
 
   @Override
   /** {@inheritDoc} */

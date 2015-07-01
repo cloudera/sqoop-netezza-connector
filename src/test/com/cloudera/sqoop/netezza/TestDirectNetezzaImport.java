@@ -45,9 +45,9 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     // If you try to import un-escaped data in Netezza, the JDBC connection will
     // hang. This tests that NetezzaImportJob sets the appropriate flag for us.
     final String TABLE_NAME = "COMMA_TABLE_2";
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "'meep,beep'");
-    runImport(options, TABLE_NAME);
+    createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, null, TABLE_NAME, "1", "'meep,beep'");
+    runImport(options, null, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");
   }
@@ -59,9 +59,9 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
     final String TABLE_NAME = "COMMA_TABLE_3";
     options.setEscapedBy('X');
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "'meep,beep'");
-    runImport(options, TABLE_NAME);
+    createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, null, TABLE_NAME, "1", "'meep,beep'");
+    runImport(options, null, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");
   }
@@ -71,9 +71,9 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
     final String TABLE_NAME = "TAB_TABLE";
     options.setFieldsTerminatedBy('\t');
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "'meep\tbeep'");
-    runImport(options, TABLE_NAME);
+    createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, null, TABLE_NAME, "1", "'meep\tbeep'");
+    runImport(options, null, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1\tmeep\\\tbeep");
   }
@@ -81,13 +81,13 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
   public void testMultipleMappers() throws Exception {
     // Ensure that multiple input target files work.
     final String TABLE_NAME = "MULTI_TABLE";
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "'foo'");
-    addRow(conn, TABLE_NAME, "2", "'bar'");
-    addRow(conn, TABLE_NAME, "3", "'baz'");
-    addRow(conn, TABLE_NAME, "4", "'biff'");
+    createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, null, TABLE_NAME, "1", "'foo'");
+    addRow(conn, null, TABLE_NAME, "2", "'bar'");
+    addRow(conn, null, TABLE_NAME, "3", "'baz'");
+    addRow(conn, null, TABLE_NAME, "4", "'biff'");
     options.setNumMappers(2);
-    runImport(options, TABLE_NAME);
+    runImport(options, null, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 4);
     verifyImportLine(TABLE_NAME, "2,bar");
     verifyImportLine(TABLE_NAME, "1,foo");
@@ -105,14 +105,14 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     // If you try to import un-escaped data in Netezza, the JDBC connection will
     // hang. This tests that NetezzaImportJob sets the appropriate flag for us.
     final String TABLE_NAME = "MAX_ERRORS";
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "'meep,beep'");
+    createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, null, TABLE_NAME, "1", "'meep,beep'");
     // TODO verifying maxErrors 2 requires error generated from external
     // system.  We can check via visual inspection of the map query generated
     // by the map task.
     String[] extraArgs = { "--verbose", "--",
         "--" + DirectNetezzaManager.NZ_MAXERRORS_ARG, "2", };
-    runImport(options, TABLE_NAME, extraArgs);
+    runImport(options, null, TABLE_NAME, extraArgs);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");
   }
@@ -127,15 +127,15 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
    */
   public void testNoViewSupport() throws Exception {
     final String TABLE_NAME = "MY_TABLE";
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "'meep,beep'");
+    createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
+    addRow(conn, null, TABLE_NAME, "1", "'meep,beep'");
 
     final String VIEW_NAME = "MY_VIEW";
     createView(conn, VIEW_NAME, "SELECT * FROM " + TABLE_NAME);
     System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
     String message = null;
     try {
-      runImport(options, VIEW_NAME);
+      runImport(options, null, VIEW_NAME);
     } catch (RuntimeException ex) {
       message = ex.getMessage();
     }
@@ -147,11 +147,11 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
   public void testNullBehavior() throws Exception {
     // Ensure that we're correctly supporting NULL substitutions
     final String TABLE_NAME = "NULL_SUBSTITUTION";
-    createTable(conn, TABLE_NAME, "INTEGER", "VARCHAR(32)", "INTEGER", "VARCHAR(32)");
-    addRow(conn, TABLE_NAME, "1", "null", "null", "'value'");
+    createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)", "INTEGER", "VARCHAR(32)");
+    addRow(conn, null, TABLE_NAME, "1", "null", "null", "'value'");
     options.setNullStringValue("\\\\N");
 
-    runImport(options, TABLE_NAME);
+    runImport(options, null, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1,\\N,,value");
   }

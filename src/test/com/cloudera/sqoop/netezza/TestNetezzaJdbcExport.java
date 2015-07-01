@@ -42,6 +42,7 @@ public class TestNetezzaJdbcExport extends TestCase {
 
   private static int tableId;
   private ConnManager mgr;
+  private String schema;
 
   /** Base directory for all temporary data. */
   public static final String TEMP_BASE_DIR;
@@ -66,6 +67,14 @@ public class TestNetezzaJdbcExport extends TestCase {
 
   protected String getTableName() {
     return getTablePrefix() + tableId;
+  }
+
+  protected String getSchema() {
+    return schema;
+  }
+
+  protected void setSchema(String schema) {
+    this.schema = schema;
   }
 
   protected Configuration getConf() {
@@ -122,9 +131,33 @@ public class TestNetezzaJdbcExport extends TestCase {
     os.close();
   }
 
+  protected void createSchema(String schema) throws SQLException {
+    Connection conn = mgr.getConnection();
+    NzTestUtil.dropSchemaIfExists(conn, schema);
+    StringBuilder sb = new StringBuilder();
+    sb.append("CREATE SCHEMA ");
+    sb.append(schema);
+
+    PreparedStatement stmt = null;
+    try {
+      stmt = conn.prepareStatement(sb.toString());
+      stmt.executeUpdate();
+      conn.commit();
+    } finally {
+      if (null != stmt)  {
+        stmt.close();
+      }
+    }
+  }
+
   protected void createTableForType(String typeName) throws SQLException {
     StringBuilder sb = new StringBuilder();
     sb.append("CREATE TABLE ");
+    if (getSchema() != null) {
+      createSchema(getSchema());
+      sb.append(getSchema());
+      sb.append(".");
+    }
     sb.append(getTableName());
     sb.append("( id INT NOT NULL, val ");
     sb.append(typeName);
@@ -168,8 +201,13 @@ public class TestNetezzaJdbcExport extends TestCase {
     ResultSet rs = null;
 
     try {
-      ps = c.prepareStatement("SELECT val FROM " + getTableName()
-          + " WHERE id = ?");
+      String query = "SELECT val FROM ";
+      if (getSchema() != null) {
+        query += getSchema() + ".";
+      }
+      query += getTableName() + " WHERE id = ?";
+
+      ps = c.prepareStatement(query);
       ps.setInt(1, id);
       rs = ps.executeQuery();
 
@@ -397,6 +435,25 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  public void testIntExportWithDifferentSchema() throws Exception {
+    if (NzTestUtil.supportsMultipleSchema(mgr.getConnection())) {
+      final String schema = "EXPORT_SCHEMA";
+      setSchema(schema);
+
+      SqoopOptions options = getSqoopOptions();
+      Configuration conf = options.getConf();
+
+      createTableForType("INT");
+      Path p = new Path(getBasePath(), "intx.txt");
+      writeFileWithLine(conf, p, "1,42");
+      runExport(options, p, new String[]{"--", "--schema", schema});
+      checkValForId(1, new Checker() {
+        public void check(ResultSet rs) throws SQLException {
+          assertEquals(42, rs.getInt(1));
+        }
+      });
+    }
+  }
 }
 
 
