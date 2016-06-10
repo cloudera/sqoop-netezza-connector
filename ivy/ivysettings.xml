@@ -29,6 +29,7 @@
   <property name="repo.dir" value="${user.home}/.m2/repository"/>
   <property name="maven2.pattern.ext"  value="${maven2.pattern}.[ext]"/>
   <property name="resolvers" value="default" override="false"/>
+  <property name="ivy.cache.dir" value="${user.home}/.ivy2/cache"/>
   <settings defaultResolver="${resolvers}"/>
 
   <resolvers>
@@ -44,14 +45,21 @@
        <ivy pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision].pom"/>
     </filesystem>
 
+    <filesystem name="fs2">
+       <artifact pattern="${ivy.cache.dir}/[organisation]/[module]/jars/[module]-[revision](-[classifier]).[ext]"/>
+       <ivy pattern="${ivy.cache.dir}/[organisation]/[module]/ivy-[revision].xml"/>
+    </filesystem>
+
     <chain name="default" dual="true" checkmodified="true"
         changingPattern=".*SNAPSHOT">
+      <resolver ref="fs2"/>
       <resolver ref="apache-snapshot"/> 
       <resolver ref="cloudera-releases"/> 
       <resolver ref="maven2"/>
     </chain>
 
     <chain name="internal" dual="true">
+      <resolver ref="fs2"/>
       <resolver ref="fs"/>
       <resolver ref="apache-snapshot"/> 
       <resolver ref="cloudera-releases"/> 
@@ -59,6 +67,7 @@
     </chain>
 
     <chain name="external">
+      <resolver ref="fs2"/>
       <resolver ref="maven2"/>
     </chain>
 
