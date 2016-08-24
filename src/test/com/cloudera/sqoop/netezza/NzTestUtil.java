@@ -38,7 +38,7 @@ public class NzTestUtil {
   private static final Log LOG = LogFactory.getLog(NzTestUtil.class.getName());
 
   /** Hostname in /etc/hosts for the Netezza test database. */
-  public static final String NETEZZA_HOST = System.getProperty("sqoop.netezza.host", "nzhost");
+  public static final String NETEZZA_HOST = System.getProperty("sqoop.netezza.host", "ve0326.halxg.cloudera.com:5480");
 
   /** DB schema to use on the host. */
   public static final String NETEZZA_DB = System.getProperty("sqoop.netezza.db", "sqooptestdb");

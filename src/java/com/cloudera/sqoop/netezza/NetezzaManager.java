@@ -124,6 +124,16 @@ public class NetezzaManager extends GenericJdbcManager {
   }
 
   @Override
+  public String escapeColName(String colName) {
+    // Return full table name including schema if needed
+    if (schema != null && !schema.isEmpty()) {
+      return escapeIdentifier(schema) + "." + escapeIdentifier(colName);
+    }
+
+    return escapeIdentifier(colName);
+  }
+
+  @Override
   public String escapeTableName(String tableName) {
     // Return full table name including schema if needed
     if (schema != null && !schema.isEmpty()) {
