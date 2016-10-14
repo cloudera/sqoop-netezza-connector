@@ -54,7 +54,7 @@
   <property name="test.timeout" value="1800000"/>
 
   <!-- Remote testing machine -->
-  <property name="sqoop.netezza.host" value="nzhost" />
+  <property name="sqoop.netezza.host" value="ve0326.halxg.cloudera.com:5480" />
   <property name="sqoop.netezza.db" value="sqooptestdb" />
   <property name="sqoop.netezza.user" value="SQOOPTEST" />
   <property name="sqoop.netezza.password" value="sqooptest" />
