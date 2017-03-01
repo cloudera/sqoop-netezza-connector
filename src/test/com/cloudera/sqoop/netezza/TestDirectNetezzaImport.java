@@ -2,18 +2,25 @@
 
 package com.cloudera.sqoop.netezza;
 
-import junit.framework.Assert;
-
+import junit.framework.JUnit4TestAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import com.cloudera.sqoop.Sqoop;
 import com.cloudera.sqoop.SqoopOptions;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import java.sql.SQLException;
 
 /**
  * Test the Netezza EDW connector for direct mode imports.
  */
+@RunWith(JUnit4.class)
 public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
   private static final Log LOG =
@@ -22,6 +29,9 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
   protected String getDbFriendlyName() {
     return "directnetezza";
   }
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   /**
    * Create a SqoopOptions to connect to the manager.
@@ -41,6 +51,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
   // This includes all the TestJdbcNetezzaImport tests. Also run the following
   // tests that demonstrate features specific to remote external tables.
 
+  @Test
   public void testRawComma() throws Exception {
     // If you try to import un-escaped data in Netezza, the JDBC connection will
     // hang. This tests that NetezzaImportJob sets the appropriate flag for us.
@@ -52,6 +63,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");
   }
 
+  @Test
   public void testNoAlternateEscapes() throws Exception {
     // Netezza claims that only '\\' may be used as an escape character.
     // Check that we're sanely guarding against this probability.
@@ -66,6 +78,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");
   }
 
+  @Test
   public void testEscapeAlternateFieldDelim() throws Exception {
     // Set the field delimiter to tab. Make sure we auto-escape it.
 
@@ -78,6 +91,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     verifyImportLine(TABLE_NAME, "1\tmeep\\\tbeep");
   }
 
+  @Test
   public void testMultipleMappers() throws Exception {
     // Ensure that multiple input target files work.
     final String TABLE_NAME = "MULTI_TABLE";
@@ -101,6 +115,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
    *
    * This is essentially the same test as testRawComma
    */
+  @Test
   public void testMaxErrors() throws Exception {
     // If you try to import un-escaped data in Netezza, the JDBC connection will
     // hang. This tests that NetezzaImportJob sets the appropriate flag for us.
@@ -125,25 +140,22 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
    * is indeed the case.
    * @throws Exception
    */
-  public void testNoViewSupport() throws Exception {
+  @Test
+  public void testNoViewSupportWithCurrentSchema() throws Exception {
     final String TABLE_NAME = "MY_TABLE";
     createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
     addRow(conn, null, TABLE_NAME, "1", "'meep,beep'");
 
     final String VIEW_NAME = "MY_VIEW";
-    createView(conn, VIEW_NAME, "SELECT * FROM " + TABLE_NAME);
+    createView(conn, null, VIEW_NAME, "SELECT * FROM " + TABLE_NAME);
     System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
-    String message = null;
-    try {
-      runImport(options, null, VIEW_NAME);
-    } catch (RuntimeException ex) {
-      message = ex.getMessage();
-    }
 
-    Assert.assertTrue(message != null && message.endsWith(": "
-              + DirectNetezzaManager.ERROR_MESSAGE_TABLE_SUPPORT_ONLY));
+    thrown.expect(RuntimeException.class);
+    thrown.expectMessage(DirectNetezzaManager.ERROR_MESSAGE_TABLE_SUPPORT_ONLY);
+    runImport(options, null, VIEW_NAME);
   }
 
+  @Test
   public void testNullBehavior() throws Exception {
     // Ensure that we're correctly supporting NULL substitutions
     final String TABLE_NAME = "NULL_SUBSTITUTION";
@@ -154,6 +166,67 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     runImport(options, null, TABLE_NAME);
     verifyImportCount(TABLE_NAME, 1);
     verifyImportLine(TABLE_NAME, "1,\\N,,value");
+  }
+
+  @Test
+  public void testImportTableWithCurrentSchema() throws Exception {
+    createAndVerifyTestTableWithSpecificSchema(null);
+  }
+
+  @Test
+  public void testImportTableWithCustomSchema() throws Exception {
+    createAndVerifyTestTableWithSpecificSchema("MY_SCHEMA");
+  }
+
+  @Test
+  public void testNoViewSupportWithCustomSchema() throws Exception {
+    final String TABLE_NAME = "MY_TABLE";
+    createTestTableWithSpecificNameAndSchema(null, TABLE_NAME);
+
+    final String SCHEMA_NAME = "MY_SCHEMA";
+    final String VIEW_NAME = "MY_VIEW";
+    createView(conn, SCHEMA_NAME, VIEW_NAME, "SELECT * FROM " + TABLE_NAME);
+
+    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
+
+    expectExceptionOnViewImport(SCHEMA_NAME, VIEW_NAME);
+  }
+
+  @Test
+  public void testTableAndViewWithTheSameNameUnderDifferentSchemas() throws Exception {
+    final String TABLE_AND_VIEW_NAME = "MY_TABLE_AND_VIEW";
+    createTestTableWithSpecificNameAndSchema(null, TABLE_AND_VIEW_NAME);
+
+    final String SCHEMA_NAME = "MY_SCHEMA";
+    createView(conn, SCHEMA_NAME, TABLE_AND_VIEW_NAME, "SELECT * FROM " + TABLE_AND_VIEW_NAME);
+
+    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
+
+    expectExceptionOnViewImport(SCHEMA_NAME, TABLE_AND_VIEW_NAME);
+  }
+
+  public void createAndVerifyTestTableWithSpecificSchema(String schemaName) throws Exception {
+    createTestTableWithSpecificNameAndSchema(schemaName, "TEST_TABLE");
+
+    runImport(options, schemaName, "TEST_TABLE");
+    verifyImportCount("TEST_TABLE", 1);
+    verifyImportLine("TEST_TABLE", "1,test1\\,test2");
+  }
+
+  public void createTestTableWithSpecificNameAndSchema(String schemaName, String tableName) throws SQLException{
+    createTable(conn, schemaName, tableName, "INTEGER", "VARCHAR(32)");
+    addRow(conn, schemaName, tableName, "1", "'test1,test2'");
+  }
+
+  public void expectExceptionOnViewImport(String schemaName, String tableName) throws Exception {
+    thrown.expect(RuntimeException.class);
+    thrown.expectMessage(DirectNetezzaManager.ERROR_MESSAGE_TABLE_SUPPORT_ONLY);
+    runImport(options, schemaName, tableName);
+  }
+
+  //workaround: ant kept falling back to JUnit3
+  public static junit.framework.Test suite() {
+    return new JUnit4TestAdapter(TestDirectNetezzaImport.class);
   }
 }
 

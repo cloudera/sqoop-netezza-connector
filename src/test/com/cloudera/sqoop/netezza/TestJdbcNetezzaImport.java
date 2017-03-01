@@ -27,6 +27,8 @@ import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.tool.SqoopTool;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Test the Netezza EDW connector for jdbc mode imports.
@@ -39,6 +41,7 @@ public class TestJdbcNetezzaImport extends TestCase {
   protected Connection conn;
 
   @Override
+  @Before
   public void setUp() throws IOException, InterruptedException, SQLException {
 //    new NzTestUtil().clearNzSessions();
     conf = NzTestUtil.initConf(new Configuration());
@@ -48,6 +51,7 @@ public class TestJdbcNetezzaImport extends TestCase {
   }
 
   @Override
+  @After
   public void tearDown() throws SQLException {
     if (null != conn) {
       this.conn.close();
@@ -87,16 +91,24 @@ public class TestJdbcNetezzaImport extends TestCase {
 
     return sqoopOptions;
   }
+  
+  protected String assembleTableOrViewName(String schema, String tableOrView) {
+
+    if (schema != null) {
+      return schema + "." + tableOrView;
+    } else{
+      return tableOrView;
+    }
+  }
 
   protected void createSchema(Connection c, String schema) throws SQLException {
     NzTestUtil.dropSchemaIfExists(c, schema);
-    StringBuilder sb = new StringBuilder();
-    sb.append("CREATE SCHEMA ");
-    sb.append(schema);
+
+    String createSchemaStmt = "CREATE SCHEMA " + schema;
 
     PreparedStatement stmt = null;
     try {
-      stmt = c.prepareStatement(sb.toString());
+      stmt = c.prepareStatement(createSchemaStmt);
       stmt.executeUpdate();
       c.commit();
     } finally {
@@ -118,10 +130,8 @@ public class TestJdbcNetezzaImport extends TestCase {
     sb.append("CREATE TABLE ");
     if (schema != null) {
       createSchema(c, schema);
-      sb.append(schema);
-      sb.append(".");
     }
-    sb.append(tableName);
+    sb.append(assembleTableOrViewName(schema, tableName));
     sb.append(" (");
     boolean first = true;
     for (int i = 0; i < colTypes.length; i++) {
@@ -148,20 +158,24 @@ public class TestJdbcNetezzaImport extends TestCase {
     }
   }
 
-  protected void createView(Connection c, String viewName, String selectQuery)
+  protected void createView(Connection c, String schema, String viewName, String selectQuery)
       throws SQLException {
 
     if (selectQuery == null) {
-      throw new SQLException("msut have a select query");
+      throw new SQLException("must have a select query");
     }
 
     NzTestUtil.dropViewIfExists(c, viewName);
 
-    String query = "CREATE VIEW " + viewName + " AS " + selectQuery;
+    if (schema != null) {
+      createSchema(c, schema);
+    }
+
+    String createTableStmt = "CREATE VIEW " + assembleTableOrViewName(schema, viewName) + " AS " + selectQuery;
 
     PreparedStatement stmt = null;
     try {
-      stmt = c.prepareStatement(query);
+      stmt = c.prepareStatement(createTableStmt);
       stmt.executeUpdate();
       c.commit();
     } finally {

@@ -48,10 +48,10 @@ public class DirectNetezzaManager extends NetezzaManager {
 
   // Catalog query for looking up object types
   private static final String QUERY_OBJECTY_TYPE = "SELECT OBJTYPE FROM "
-      + "_V_OBJECTS WHERE OBJNAME = ? AND OWNER = ?";
+      + "_V_OBJECTS WHERE OBJNAME = ? AND SCHEMA = CURRENT_SCHEMA";
 
   private static final String QUERY_OBJECTY_TYPE_WITH_SCHEMA = "SELECT OBJTYPE FROM "
-      + "_V_OBJECTS WHERE OBJNAME = ? AND OWNER = ? AND SCHEMA = ?";
+      + "_V_OBJECTS WHERE OBJNAME = ? AND SCHEMA = ?";
 
   // Error message used for indicating that only Table based import export
   // is allowed. This is needed as a constant to ensure correct working of
@@ -185,14 +185,13 @@ public class DirectNetezzaManager extends NetezzaManager {
       if (getSchema() != null) {
         pstmt = conn.prepareStatement(QUERY_OBJECTY_TYPE_WITH_SCHEMA,
             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        pstmt.setString(3, getSchema());
+        pstmt.setString(2, getSchema());
       } else {
         pstmt = conn.prepareStatement(QUERY_OBJECTY_TYPE,
             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
       }
 
       pstmt.setString(1, shortTableName);
-      pstmt.setString(2, owner);
 
       ResultSet rset = pstmt.executeQuery();
 
