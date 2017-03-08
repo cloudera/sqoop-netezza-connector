@@ -7,7 +7,6 @@ import java.io.FileFilter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.cloudera.sqoop.Sqoop;
 import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.cloudera.sqoop.SqoopOptions;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,7 +25,6 @@ import static com.cloudera.sqoop.SqoopOptions.FileLayout.ParquetFile;
 import static com.cloudera.sqoop.SqoopOptions.FileLayout.SequenceFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 /**
  * Test exports over FIFO to Netezza.
@@ -290,7 +289,7 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
 
     String validationMessage = String.format("Unsupported argument with Netezza Connector: %s", passedArgument);
 
-    thrown.expectCause(instanceOf(IllegalArgumentException.class));
+    thrown.expectCause(IsInstanceOf.<Throwable>instanceOf(IllegalArgumentException.class));
     thrown.expectMessage(validationMessage);
     runExport(options, p);
   }

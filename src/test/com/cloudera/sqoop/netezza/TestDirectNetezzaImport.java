@@ -5,6 +5,7 @@ package com.cloudera.sqoop.netezza;
 import org.apache.hadoop.conf.Configuration;
 
 import com.cloudera.sqoop.SqoopOptions;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -15,7 +16,6 @@ import static com.cloudera.sqoop.SqoopOptions.FileLayout;
 import static com.cloudera.sqoop.SqoopOptions.FileLayout.SequenceFile;
 import static com.cloudera.sqoop.SqoopOptions.FileLayout.AvroDataFile;
 import static com.cloudera.sqoop.SqoopOptions.FileLayout.ParquetFile;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 /**
  * Test the Netezza EDW connector for direct mode imports.
@@ -247,7 +247,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
     String validationMessage = String.format("Unsupported argument with Netezza Connector: %s", passedArgument);
 
-    thrown.expectCause(instanceOf(IllegalArgumentException.class));
+    thrown.expectCause(IsInstanceOf.<Throwable>instanceOf(IllegalArgumentException.class));
     thrown.expectMessage(validationMessage);
     runImport(options, null, TABLE_NAME);
   }
