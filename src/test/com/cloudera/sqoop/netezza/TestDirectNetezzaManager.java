@@ -2,21 +2,23 @@
 
 package com.cloudera.sqoop.netezza;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.SqoopOptions.InvalidOptionsException;
+import org.junit.Test;
 
 import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * This tests some of the helper functions found in the Direct Netezza Manager.
  */
-public class TestDirectNetezzaManager extends TestCase {
+public class TestDirectNetezzaManager {
 
   /**
    * Test verifies that the "extra args" are parsed and present in conf's used
@@ -25,6 +27,7 @@ public class TestDirectNetezzaManager extends TestCase {
    * @throws ParseException
    * @throws InvalidOptionsException
    */
+  @Test
   public void testParseExtraArgs() throws ParseException,
       InvalidOptionsException {
     SqoopOptions opts = new SqoopOptions();
@@ -44,6 +47,7 @@ public class TestDirectNetezzaManager extends TestCase {
    * @throws ParseException
    * @throws InvalidOptionsException
    */
+  @Test
   public void testParseExtraArgsLogDir() throws ParseException,
       InvalidOptionsException {
     SqoopOptions opts = new SqoopOptions();
@@ -63,6 +67,7 @@ public class TestDirectNetezzaManager extends TestCase {
    * @throws ParseException
    * @throws InvalidOptionsException
    */
+  @Test
   public void testParseBadExtraArgs() throws ParseException,
       InvalidOptionsException {
     SqoopOptions opts = new SqoopOptions();
@@ -87,6 +92,7 @@ public class TestDirectNetezzaManager extends TestCase {
    *
    * @throws Exception
    */
+  @Test
   public void testPropagateNullSubstituteValues() throws Exception {
     SqoopOptions opts = new SqoopOptions();
     DirectNetezzaManager m = new DirectNetezzaManager(opts);
@@ -108,6 +114,7 @@ public class TestDirectNetezzaManager extends TestCase {
    *
    * @throws Exception
    */
+  @Test
   public void testPropagateNullSubstituteValuesOctalSequence()
     throws Exception {
     SqoopOptions opts = new SqoopOptions();
@@ -129,6 +136,7 @@ public class TestDirectNetezzaManager extends TestCase {
    *
    * @throws Exception
    */
+  @Test
   public void testPropagateNullSubstituteValuesCorrectness() throws Exception {
     SqoopOptions opts = new SqoopOptions();
     DirectNetezzaManager m = new DirectNetezzaManager(opts);
@@ -143,6 +151,7 @@ public class TestDirectNetezzaManager extends TestCase {
     assertEquals("\\N", configuration.get(PROPERTY_NULL_STRING));
   }
 
+  @Test
   public void testValidateParameterCompatibilityHBase() throws Exception {
     SqoopOptions opts = new SqoopOptions();
     opts.setHBaseTable("table");
@@ -150,6 +159,7 @@ public class TestDirectNetezzaManager extends TestCase {
     runTestValidateparameterCompatibility(opts, "--hbase-table");
   }
 
+  @Test
   public void testValidateParameterCompatibilityAvro() throws Exception {
     SqoopOptions opts = new SqoopOptions();
     opts.setFileLayout(SqoopOptions.FileLayout.AvroDataFile);
@@ -157,11 +167,20 @@ public class TestDirectNetezzaManager extends TestCase {
     runTestValidateparameterCompatibility(opts, "--as-avrodatafile");
   }
 
+  @Test
   public void testValidateParameterCompatibilitySequence() throws Exception {
     SqoopOptions opts = new SqoopOptions();
     opts.setFileLayout(SqoopOptions.FileLayout.SequenceFile);
 
     runTestValidateparameterCompatibility(opts, "--as-sequencefile");
+  }
+
+  @Test
+  public void testValidateParameterCompatibilityParquet() throws Exception {
+    SqoopOptions opts = new SqoopOptions();
+    opts.setFileLayout(SqoopOptions.FileLayout.ParquetFile);
+
+    runTestValidateparameterCompatibility(opts, "--as-parquetfile");
   }
 
   private void runTestValidateparameterCompatibility(SqoopOptions opts, String param) throws Exception {

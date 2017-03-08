@@ -247,11 +247,14 @@ public class DirectNetezzaManager extends NetezzaManager {
           "Bad arguments with netezza specific options", e);
     }
 
+    // Validate parameter compatiblitiy
+    validateParameterCompatibility(options);
+
     NetezzaImportJob importer = null;
     try {
       importer = new NetezzaImportJob(context);
     } catch (ClassNotFoundException cnfe) {
-      throw new IOException("Coudl not load required class", cnfe);
+      throw new IOException("Could not load required class", cnfe);
     }
 
     LOG.info("Beginning Netezza fast path import");
@@ -357,9 +360,13 @@ public class DirectNetezzaManager extends NetezzaManager {
     if(options.getFileLayout() == SqoopOptions.FileLayout.SequenceFile) {
       throwIllegalArgumentException("--as-sequencefile");
     }
+
+    if(options.getFileLayout() == SqoopOptions.FileLayout.ParquetFile) {
+      throwIllegalArgumentException("--as-parquetfile");
+    }
   }
 
   private void throwIllegalArgumentException(String option) {
-    throw new IllegalArgumentException("Unsupported argument: " + option);
+    throw new IllegalArgumentException("Unsupported argument with Netezza Connector: " + option);
   }
 }

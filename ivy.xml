@@ -65,7 +65,9 @@
     
     <!-- dependencies for static analysis -->
     <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"
-      conf="checkstyle->default" />
+      conf="checkstyle->default" >
+      <exclude org="junit" module="junit" />
+    </dependency>
 
     <!-- dependencies on Sqoop -->
     <dependency org="org.apache.sqoop" name="sqoop"
@@ -83,6 +85,7 @@
     </dependency>
 
     <exclude org="commons-daemon" module="commons-daemon" />
+    <exclude type="pom" />
 
   </dependencies>
 </ivy-module>

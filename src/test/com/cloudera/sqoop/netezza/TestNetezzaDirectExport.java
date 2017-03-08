@@ -7,6 +7,7 @@ import java.io.FileFilter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.cloudera.sqoop.Sqoop;
 import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,6 +16,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.cloudera.sqoop.SqoopOptions;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import static com.cloudera.sqoop.SqoopOptions.FileLayout.AvroDataFile;
+import static com.cloudera.sqoop.SqoopOptions.FileLayout.ParquetFile;
+import static com.cloudera.sqoop.SqoopOptions.FileLayout.SequenceFile;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 /**
  * Test exports over FIFO to Netezza.
@@ -33,11 +44,15 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     return options;
   }
 
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
   /**
    * This tests overriding a the Netezza specific MAXERRORS export argument.
    * This is an extra argument specified using sqoop's "extra argument" args
    * that come after a "--" arg.
    */
+  @Test
   public void testMaxErrors() throws Exception {
     SqoopOptions options = getSqoopOptions();
     options.setInputFieldsTerminatedBy('|');
@@ -56,11 +71,12 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     runExport(options, p, extraArgs);
     checkValForId(1, new Checker() {
       public void check(ResultSet rs) throws SQLException {
-        assertEquals(3.1416f, rs.getFloat(1));
+        assertEquals(3.1416f, rs.getFloat(1), EPSILON);
       }
     });
   }
 
+  @Test
   public void testFloatExportWithSubstitutedFieldDelimiters() throws Exception {
     SqoopOptions options = getSqoopOptions();
     options.setInputFieldsTerminatedBy('|');
@@ -72,11 +88,12 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     runExport(options, p);
     checkValForId(1, new Checker() {
       public void check(ResultSet rs) throws SQLException {
-        assertEquals(3.1416f, rs.getFloat(1));
+        assertEquals(3.1416f, rs.getFloat(1), EPSILON);
       }
     });
   }
 
+  @Test
   public void testTruncString() throws Exception {
     // Write a field that is longer than the varchar len. verify that it is
     // truncated.
@@ -103,6 +120,7 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
    *
    * @throws Exception
    */
+  @Test
   public void testBadRecordsWithNonExistentLogDir() throws Exception {
     SqoopOptions options = getSqoopOptions();
     options.setInputFieldsTerminatedBy('|');
@@ -129,6 +147,7 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     lfs.delete(new Path(logDirPath), true);
   }
 
+  @Test
   public void testUploadDir() throws Exception {
     SqoopOptions options = getSqoopOptions();
     options.setInputFieldsTerminatedBy('|');
@@ -196,6 +215,7 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     Assert.assertEquals(numLogFiles, logFiles.length);
   }
 
+  @Test
   public void testNullSubstitutionString() throws Exception {
     // Ensure that we're correctly supporting NULL substitutions
     SqoopOptions options = getSqoopOptions();
@@ -217,6 +237,7 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
     });
   }
 
+  @Test
   public void testStringExportLowAscii() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -232,5 +253,45 @@ public class TestNetezzaDirectExport extends TestNetezzaJdbcExport {
         assertEquals("a\tb\bc", rs.getString(1));
       }
     });
+  }
+
+  @Test
+  public void testExportFailsWithSequenceFile() throws Exception {
+    expectExceptionWithSpecificFileLayout(SequenceFile);
+  }
+
+  @Test
+  public void testExportFailsWithAvroDataFile() throws Exception {
+    expectExceptionWithSpecificFileLayout(AvroDataFile);
+  }
+
+  @Test
+  public void testExportFailsWithParquetFile() throws Exception {
+    expectExceptionWithSpecificFileLayout(ParquetFile);
+  }
+
+  public void expectExceptionWithSpecificFileLayout(SqoopOptions.FileLayout fileLayout) throws Exception {
+    SqoopOptions options = getSqoopOptions();
+    Configuration conf = options.getConf();
+    String passedArgument = null;
+    options.setFileLayout(fileLayout);
+
+    createTableForType("INTEGER");
+    Path p = new Path(getBasePath(), "inty.txt");
+    writeFileWithLine(conf, p, "1");
+
+    if(fileLayout == SequenceFile){
+      passedArgument = "--as-sequencefile";
+    } else if(fileLayout == AvroDataFile) {
+      passedArgument = "--as-avrodatafile";
+    } else if(fileLayout == ParquetFile) {
+      passedArgument = "--as-parquetfile";
+    }
+
+    String validationMessage = String.format("Unsupported argument with Netezza Connector: %s", passedArgument);
+
+    thrown.expectCause(instanceOf(IllegalArgumentException.class));
+    thrown.expectMessage(validationMessage);
+    runExport(options, p);
   }
 }

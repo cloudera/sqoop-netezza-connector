@@ -2,29 +2,25 @@
 
 package com.cloudera.sqoop.netezza;
 
-import junit.framework.JUnit4TestAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 
-import com.cloudera.sqoop.Sqoop;
 import com.cloudera.sqoop.SqoopOptions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.sql.SQLException;
+
+import static com.cloudera.sqoop.SqoopOptions.FileLayout;
+import static com.cloudera.sqoop.SqoopOptions.FileLayout.SequenceFile;
+import static com.cloudera.sqoop.SqoopOptions.FileLayout.AvroDataFile;
+import static com.cloudera.sqoop.SqoopOptions.FileLayout.ParquetFile;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 /**
  * Test the Netezza EDW connector for direct mode imports.
  */
-@RunWith(JUnit4.class)
 public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
-
-  private static final Log LOG =
-      LogFactory.getLog(TestDirectNetezzaImport.class.getName());
 
   protected String getDbFriendlyName() {
     return "directnetezza";
@@ -148,7 +144,6 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
     final String VIEW_NAME = "MY_VIEW";
     createView(conn, null, VIEW_NAME, "SELECT * FROM " + TABLE_NAME);
-    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
 
     thrown.expect(RuntimeException.class);
     thrown.expectMessage(DirectNetezzaManager.ERROR_MESSAGE_TABLE_SUPPORT_ONLY);
@@ -187,8 +182,6 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     final String VIEW_NAME = "MY_VIEW";
     createView(conn, SCHEMA_NAME, VIEW_NAME, "SELECT * FROM " + TABLE_NAME);
 
-    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
-
     expectExceptionOnViewImport(SCHEMA_NAME, VIEW_NAME);
   }
 
@@ -200,9 +193,22 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     final String SCHEMA_NAME = "MY_SCHEMA";
     createView(conn, SCHEMA_NAME, TABLE_AND_VIEW_NAME, "SELECT * FROM " + TABLE_AND_VIEW_NAME);
 
-    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
-
     expectExceptionOnViewImport(SCHEMA_NAME, TABLE_AND_VIEW_NAME);
+  }
+
+  @Test
+  public void testImportFailsWithSequenceFile() throws Exception {
+    expectExceptionWithSpecificFileLayout(SequenceFile);
+  }
+
+  @Test
+  public void testImportFailsWithAvroDataFile() throws Exception {
+    expectExceptionWithSpecificFileLayout(AvroDataFile);
+  }
+
+  @Test
+  public void testImportFailsWithParquetFile() throws Exception {
+    expectExceptionWithSpecificFileLayout(ParquetFile);
   }
 
   public void createAndVerifyTestTableWithSpecificSchema(String schemaName) throws Exception {
@@ -224,9 +230,26 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     runImport(options, schemaName, tableName);
   }
 
-  //workaround: ant kept falling back to JUnit3
-  public static junit.framework.Test suite() {
-    return new JUnit4TestAdapter(TestDirectNetezzaImport.class);
+  public void expectExceptionWithSpecificFileLayout(FileLayout fileLayout) throws Exception {
+    final String TABLE_NAME = "MY_TABLE";
+    String passedArgument = null;
+
+    createTestTableWithSpecificNameAndSchema(null, TABLE_NAME);
+    options.setFileLayout(fileLayout);
+
+    if(fileLayout == SequenceFile){
+      passedArgument = "--as-sequencefile";
+    } else if(fileLayout == AvroDataFile) {
+      passedArgument = "--as-avrodatafile";
+    } else if(fileLayout == ParquetFile) {
+      passedArgument = "--as-parquetfile";
+    }
+
+    String validationMessage = String.format("Unsupported argument with Netezza Connector: %s", passedArgument);
+
+    thrown.expectCause(instanceOf(IllegalArgumentException.class));
+    thrown.expectMessage(validationMessage);
+    runImport(options, null, TABLE_NAME);
   }
 }
 

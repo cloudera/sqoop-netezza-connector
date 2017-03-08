@@ -27,18 +27,25 @@ import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.tool.ExportTool;
 import com.cloudera.sqoop.tool.SqoopTool;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test exports over JDBC to Netezza.
  */
-public class TestNetezzaJdbcExport extends TestCase {
+public class TestNetezzaJdbcExport {
 
   public static final Log LOG = LogFactory.getLog(
         TestNetezzaJdbcExport.class.getName());
+
+  protected static final float EPSILON = 0.001F;
 
   private static int tableId;
   private ConnManager mgr;
@@ -90,8 +97,10 @@ public class TestNetezzaJdbcExport extends TestCase {
     return options;
   }
 
+  @Before
   public void setUp() {
     tableId++;
+    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
     SqoopOptions options = getSqoopOptions();
     try {
       mgr = NzTestUtil.getNzManager(options);
@@ -102,6 +111,7 @@ public class TestNetezzaJdbcExport extends TestCase {
 
   }
 
+  @After
   public void tearDown() {
     if (null != mgr) {
       try {
@@ -263,6 +273,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     }
   }
 
+  @Test
   public void testIntExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -278,6 +289,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testNullIntExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -294,6 +306,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testStringExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -309,6 +322,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testStringExport2() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -324,6 +338,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testDateExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -341,6 +356,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testTimeExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -358,6 +374,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testTimestampExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -375,6 +392,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testFloatExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -385,11 +403,12 @@ public class TestNetezzaJdbcExport extends TestCase {
     runExport(options, p);
     checkValForId(1, new Checker() {
       public void check(ResultSet rs) throws SQLException {
-        assertEquals(3.1416f, rs.getFloat(1));
+        assertEquals(3.1416f, rs.getFloat(1), EPSILON);
       }
     });
   }
 
+  @Test
   public void testNVarCharExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -405,6 +424,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testNCharExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -420,6 +440,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testUTFExport() throws Exception {
     SqoopOptions options = getSqoopOptions();
     Configuration conf = options.getConf();
@@ -435,6 +456,7 @@ public class TestNetezzaJdbcExport extends TestCase {
     });
   }
 
+  @Test
   public void testIntExportWithDifferentSchema() throws Exception {
     if (NzTestUtil.supportsMultipleSchema(mgr.getConnection())) {
       final String schema = "EXPORT_SCHEMA";

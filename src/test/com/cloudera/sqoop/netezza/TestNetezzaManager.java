@@ -4,14 +4,19 @@ package com.cloudera.sqoop.netezza;
 
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.SqoopOptions.InvalidOptionsException;
-import junit.framework.TestCase;
 import org.apache.commons.cli.ParseException;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * This tests some of the helper functions found in the Direct Netezza Manager.
  */
-public class TestNetezzaManager extends TestCase {
+public class TestNetezzaManager {
 
+  @Test
   public void testParseExtraArgs() throws ParseException,
       InvalidOptionsException {
     SqoopOptions opts = new SqoopOptions();
@@ -26,6 +31,7 @@ public class TestNetezzaManager extends TestCase {
     assertEquals("1337", m.getSchema());
   }
 
+  @Test
   public void testGetParser() throws ParseException {
     SqoopOptions opts = new SqoopOptions();
     NetezzaManager m = new NetezzaManager(opts);

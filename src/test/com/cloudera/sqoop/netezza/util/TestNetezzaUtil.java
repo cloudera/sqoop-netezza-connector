@@ -2,13 +2,18 @@
 
 package com.cloudera.sqoop.netezza.util;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class NetezzaUtil.
  */
-public class TestNetezzaUtil extends TestCase {
+public class TestNetezzaUtil {
 
+  @Test
   public void testNullSafeCompareTo() {
     assertTrue(NetezzaUtil.nullSafeCompareTo(null, null));
     assertFalse(NetezzaUtil.nullSafeCompareTo(null, "a"));
@@ -16,6 +21,7 @@ public class TestNetezzaUtil extends TestCase {
     assertTrue(NetezzaUtil.nullSafeCompareTo("a", "a"));
   }
 
+  @Test
   public void testRemoveEscapeCharacters() {
     assertEquals("\\N", NetezzaUtil.removeEscapeCharacters("\\\\N"));
     assertEquals("\n", NetezzaUtil.removeEscapeCharacters("\\n"));

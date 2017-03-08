@@ -15,8 +15,6 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -29,28 +27,31 @@ import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.tool.SqoopTool;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test the Netezza EDW connector for jdbc mode imports.
  */
-public class TestJdbcNetezzaImport extends TestCase {
+public class TestJdbcNetezzaImport {
 
   protected Configuration conf;
   protected SqoopOptions options;
   protected ConnManager manager;
   protected Connection conn;
 
-  @Override
   @Before
   public void setUp() throws IOException, InterruptedException, SQLException {
 //    new NzTestUtil().clearNzSessions();
+    System.setProperty(Sqoop.SQOOP_RETHROW_PROPERTY, "true");
     conf = NzTestUtil.initConf(new Configuration());
     options = getSqoopOptions(conf);
     manager = NzTestUtil.getNzManager(options);
     conn = manager.getConnection();
   }
 
-  @Override
   @After
   public void tearDown() throws SQLException {
     if (null != conn) {
@@ -365,6 +366,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     }
   }
 
+  @Test
   public void testBasicDirectImport() throws Exception {
     final String TABLE_NAME = "BASIC_DIRECT_IMPORT";
     createTable(conn, null, TABLE_NAME, "INTEGER", "VARCHAR(32)");
@@ -381,6 +383,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "4,bar");
   }
 
+  @Test
   public void testDateImport() throws Exception {
     final String TABLE_NAME = "DATE_TABLE";
     createTable(conn, null, TABLE_NAME, "INTEGER", "DATE");
@@ -392,6 +395,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "1," + d.toString());
   }
 
+  @Test
   public void testTimeImport() throws Exception {
     final String TABLE_NAME = "TIME_TABLE";
     createTable(conn, null, TABLE_NAME, "INTEGER", "TIME");
@@ -403,6 +407,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "1," + t.toString());
   }
 
+  @Test
   public void testTimestampImport() throws Exception {
     final String TABLE_NAME = "TS_TABLE";
     createTable(conn, null, TABLE_NAME, "INTEGER", "TIMESTAMP");
@@ -414,6 +419,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "1," + t.toString());
   }
 
+  @Test
   public void testLargeNumber() throws Exception {
     final String TABLE_NAME = "BIGNUM_TABLE";
     createTable(conn, null, TABLE_NAME, "INTEGER", "DECIMAL (30,8)");
@@ -426,6 +432,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "1," + valStr + "00");
   }
 
+  @Test
   public void testEscapedComma() throws Exception {
     final String TABLE_NAME = "COMMA_TABLE";
     options.setEscapedBy('\\');
@@ -436,6 +443,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "1,meep\\,beep");
   }
 
+  @Test
   public void testUserConditions() throws Exception {
     // Test that a user-specified where clause works.
 
@@ -452,6 +460,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyMissingLine(TABLE_NAME, "3,baz");
   }
 
+  @Test
   public void testNVarCharImport() throws Exception {
     final String TABLE_NAME = "BASIC_DIRECT_IMPORT";
     createTable(conn, null, TABLE_NAME, "INTEGER", "NVARCHAR(32)");
@@ -468,6 +477,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "4,bar");
   }
 
+  @Test
   public void testNCharImport() throws Exception {
     final String TABLE_NAME = "NCHAR_TABLE";
     createTable(conn, null, TABLE_NAME, "INTEGER", "NCHAR");
@@ -482,6 +492,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "3,z");
   }
 
+  @Test
   public void testUTF8Import() throws Exception {
     final String TABLE_NAME = "NCHAR_TABLE";
     createTable(conn, null, TABLE_NAME, "INTEGER", "NVARCHAR(50)");
@@ -492,6 +503,7 @@ public class TestJdbcNetezzaImport extends TestCase {
     verifyImportLine(TABLE_NAME, "1,žluťoučký kůň"); // Yellow Horse in Czech
   }
 
+  @Test
   public void testDifferentSchemaImport() throws Exception {
     if (NzTestUtil.supportsMultipleSchema(manager.getConnection())) {
       final String SCHEMA_NAME = "IMPORT_SCHEMA";
