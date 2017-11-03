@@ -284,7 +284,7 @@
     </exec>
 
     <!-- For each supported distro, finalize the parcel -->
-    <for list="el5,el6,el7,precise,sles11,wheezy,trusty" param="distro">
+    <for list="el5,el6,el7,precise,sles11,sles12,wheezy,trusty" param="distro">
       <sequential>
         <echo>Working on distro: @{distro}</echo>
 
