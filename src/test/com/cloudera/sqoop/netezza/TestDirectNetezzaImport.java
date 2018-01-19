@@ -247,7 +247,7 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
 
     String validationMessage = String.format("Unsupported argument with Netezza Connector: %s", passedArgument);
 
-    thrown.expectCause(IsInstanceOf.<Throwable>instanceOf(IllegalArgumentException.class));
+    thrown.expect(IsInstanceOf.<Throwable>instanceOf(IllegalArgumentException.class));
     thrown.expectMessage(validationMessage);
     runImport(options, null, TABLE_NAME);
   }

@@ -22,7 +22,7 @@
       value="https://repository.apache.org/content/repositories/snapshots/"
       override="false"/>
   <property name="releases.cloudera.com"
-      value="https://repository.cloudera.com/content/groups/cdh-releases-rcs/"
+      value="https://repository.cloudera.com/artifactory/cloudera-repos/"
       override="false"/>
   <property name="maven2.pattern"
       value="[organisation]/[module]/[revision]/[module]-[revision]"/>
@@ -53,16 +53,16 @@
     <chain name="default" dual="true" checkmodified="true"
         changingPattern=".*SNAPSHOT">
       <resolver ref="fs2"/>
-      <resolver ref="apache-snapshot"/> 
-      <resolver ref="cloudera-releases"/> 
+      <resolver ref="apache-snapshot"/>
+      <resolver ref="cloudera-releases"/>
       <resolver ref="maven2"/>
     </chain>
 
     <chain name="internal" dual="true">
       <resolver ref="fs2"/>
       <resolver ref="fs"/>
-      <resolver ref="apache-snapshot"/> 
-      <resolver ref="cloudera-releases"/> 
+      <resolver ref="apache-snapshot"/>
+      <resolver ref="cloudera-releases"/>
       <resolver ref="maven2"/>
     </chain>
 
@@ -74,5 +74,6 @@
   </resolvers>
   <modules>
      <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
+     <module organisation="org.apache.sqoop" name="hadoop-*" resolver="${resolvers}"/>
   </modules>
 </ivysettings>
