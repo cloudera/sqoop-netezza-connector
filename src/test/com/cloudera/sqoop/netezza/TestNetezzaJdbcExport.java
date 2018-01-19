@@ -14,21 +14,18 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 
-import org.apache.hadoop.conf.Configuration;
-
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
-import com.cloudera.sqoop.Sqoop;
-import com.cloudera.sqoop.SqoopOptions;
-
-import com.cloudera.sqoop.manager.ConnManager;
-
-import com.cloudera.sqoop.tool.ExportTool;
-import com.cloudera.sqoop.tool.SqoopTool;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.sqoop.Sqoop;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.manager.ConnManager;
+import org.apache.sqoop.tool.ExportTool;
+import org.apache.sqoop.tool.SqoopTool;
+
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -477,5 +474,3 @@ public class TestNetezzaJdbcExport {
     }
   }
 }
-
-

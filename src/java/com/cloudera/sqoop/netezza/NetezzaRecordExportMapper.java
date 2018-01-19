@@ -5,8 +5,7 @@ package com.cloudera.sqoop.netezza;
 import java.io.IOException;
 
 import org.apache.hadoop.io.LongWritable;
-
-import com.cloudera.sqoop.lib.SqoopRecord;
+import org.apache.sqoop.lib.SqoopRecord;
 
 /**
  * Netezza exporter which accepts SqoopRecords (e.g., from

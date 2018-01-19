@@ -2,9 +2,9 @@
 
 package com.cloudera.sqoop.netezza;
 
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.SqoopOptions.InvalidOptionsException;
 import org.apache.commons.cli.ParseException;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.SqoopOptions.InvalidOptionsException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

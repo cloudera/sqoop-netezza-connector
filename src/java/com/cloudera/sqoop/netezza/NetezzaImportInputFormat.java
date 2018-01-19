@@ -17,8 +17,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-
-import com.cloudera.sqoop.config.ConfigurationHelper;
+import org.apache.sqoop.config.ConfigurationHelper;
 
 /**
  * InputFormat to facilitate direct-mode import from Netezza.

@@ -2,6 +2,8 @@
 
 package com.cloudera.sqoop.netezza;
 
+import com.cloudera.sqoop.netezza.util.NetezzaUtil;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,15 +19,13 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.util.ReflectionUtils;
-
-import com.cloudera.sqoop.io.NamedFifo;
-import com.cloudera.sqoop.lib.DelimiterSet;
-import com.cloudera.sqoop.lib.SqoopRecord;
-import com.cloudera.sqoop.manager.MySQLUtils;
-import com.cloudera.sqoop.mapreduce.ExportJobBase;
-import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
-import com.cloudera.sqoop.netezza.util.NetezzaUtil;
-import com.cloudera.sqoop.util.TaskId;
+import org.apache.sqoop.io.NamedFifo;
+import org.apache.sqoop.lib.DelimiterSet;
+import org.apache.sqoop.lib.SqoopRecord;
+import org.apache.sqoop.manager.MySQLUtils;
+import org.apache.sqoop.mapreduce.ExportJobBase;
+import org.apache.sqoop.mapreduce.db.DBConfiguration;
+import org.apache.sqoop.util.TaskId;
 
 import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
 

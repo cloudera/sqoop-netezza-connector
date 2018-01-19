@@ -14,16 +14,15 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.SqoopOptions.InvalidOptionsException;
-import com.cloudera.sqoop.manager.ExportJobContext;
-import com.cloudera.sqoop.manager.ImportJobContext;
-import com.cloudera.sqoop.util.ExportException;
-import com.cloudera.sqoop.util.ImportException;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.SqoopOptions.InvalidOptionsException;
+import org.apache.sqoop.cli.RelatedOptions;
+import org.apache.sqoop.manager.ExportJobContext;
+import org.apache.sqoop.manager.ImportJobContext;
+import org.apache.sqoop.util.ExportException;
+import org.apache.sqoop.util.ImportException;
 
 import com.cloudera.sqoop.netezza.util.NetezzaUtil;
-import org.apache.sqoop.cli.RelatedOptions;
 
 import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
 

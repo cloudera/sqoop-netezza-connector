@@ -21,7 +21,7 @@
   <property name="artifact.name" value="${name}-${version}" />
   <property name="dest.jar" value="${artifact.name}.jar" />
   <property name="git.hash" value="" />
-  
+
   <!-- locations in the source tree -->
   <property name="base.src.dir" location="${basedir}/src" />
   <property name="src.dir" location="${base.src.dir}/java" />
@@ -106,7 +106,7 @@
   <property name="ivysettings.xml" location="${ivy.dir}/ivysettings.xml"/>
   <loadproperties srcfile="${ivy.dir}/libraries.properties"/>
   <property name="ivy.jar" location="${lib.dir}/ivy-${ivy.version}.jar"/>
-  <property name="ivy_repo_url" 
+  <property name="ivy_repo_url"
 	value="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar" />
   <property name="mvn_repo_url"
   value="http://repo2.maven.org/maven2/org/apache/maven/maven-ant-tasks/${mvn.version}/maven-ant-tasks-${mvn.version}.jar"/>
@@ -116,7 +116,7 @@
   <property name="build.ivy.lib.dir" location="${build.ivy.dir}/lib" />
   <property name="build.ivy.report.dir" location="${build.ivy.dir}/report" />
   <property name="redist.ivy.lib.dir"
-      location="${build.ivy.lib.dir}/${name}/redist"/> 
+      location="${build.ivy.lib.dir}/${name}/redist"/>
 
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern"
@@ -166,12 +166,12 @@
     <path refid="compile.classpath" />
   </path>
 
-  <!-- "init" target used for setup purposes. --> 
+  <!-- "init" target used for setup purposes. -->
   <target name="init">
   </target>
 
 
-  
+
   <!-- Compile core classes for the project -->
   <target name="compile"
       depends="init, ivy-retrieve-common"
@@ -327,7 +327,7 @@
           </tarfileset>
         </tar>
       </sequential>
-    </for>  
+    </for>
   </target>
 
   <!-- set variables that configure the actual test -->
@@ -350,7 +350,7 @@
       depends="compile-test,compile,test-prep">
     <antcall target="checkfailure" inheritRefs="true" />
   </target>
- 
+
   <target name="test-core">
     <!-- inner target only intended to be used via antcall.
          Does not define its dependencies. Should be invoked through the
@@ -478,7 +478,7 @@
 
     <!-- Register mvn tasks -->
     <path id="mvn-ant-task.classpath" path="${mvn.jar}" />
-    <typedef resource="org/apache/maven/artifact/ant/antlib.xml" 
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
         uri="urn:maven-artifact-ant"
         classpathref="mvn-ant-task.classpath"/>
 
@@ -527,7 +527,7 @@
   </target>
 
   <target name="clean-cache" description="Remove cached dependencies">
-    <delete dir="${user.home}/.ivy2/cache/com.cloudera.sqoop" />
+    <delete dir="${user.home}/.ivy2/cache/org.apache.sqoop" />
     <delete file="${ivy.jar}" />
   </target>
 
@@ -665,7 +665,7 @@
     <ivy:resolve settingsRef="${name}.ivy.settings" conf="common" />
   </target>
   <target name="ivy-retrieve-common" depends="ivy-resolve-common">
-    <ivy:retrieve settingsRef="${name}.ivy.settings" 
+    <ivy:retrieve settingsRef="${name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
     <ivy:cachepath pathid="${name}.common.classpath" conf="common" />
   </target>

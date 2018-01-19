@@ -2,14 +2,17 @@
 
 package com.cloudera.sqoop.manager;
 
+import com.cloudera.sqoop.netezza.DirectNetezzaManager;
+import com.cloudera.sqoop.netezza.NetezzaManager;
+
 import java.lang.reflect.Constructor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.netezza.DirectNetezzaManager;
-import com.cloudera.sqoop.netezza.NetezzaManager;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.manager.ConnManager;
+import org.apache.sqoop.manager.ManagerFactory;
 
 /**
  * Contains instantiation code for all ConnManager implementations
@@ -89,4 +92,3 @@ public class NetezzaManagerFactory extends ManagerFactory {
     }
   }
 }
-

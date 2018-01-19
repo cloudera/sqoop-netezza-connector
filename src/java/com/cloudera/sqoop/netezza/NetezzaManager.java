@@ -15,13 +15,12 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.manager.ExportJobContext;
-import com.cloudera.sqoop.manager.GenericJdbcManager;
-import com.cloudera.sqoop.manager.ImportJobContext;
-import com.cloudera.sqoop.util.ExportException;
-import com.cloudera.sqoop.util.ImportException;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.manager.ExportJobContext;
+import org.apache.sqoop.manager.GenericJdbcManager;
+import org.apache.sqoop.manager.ImportJobContext;
+import org.apache.sqoop.util.ExportException;
+import org.apache.sqoop.util.ImportException;
 import org.apache.sqoop.cli.RelatedOptions;
 
 /**
@@ -223,4 +222,3 @@ public class NetezzaManager extends GenericJdbcManager {
     applyExtraArguments(cmdLine);
   }
 }
-

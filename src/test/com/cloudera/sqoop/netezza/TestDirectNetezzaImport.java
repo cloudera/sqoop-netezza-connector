@@ -3,8 +3,7 @@
 package com.cloudera.sqoop.netezza;
 
 import org.apache.hadoop.conf.Configuration;
-
-import com.cloudera.sqoop.SqoopOptions;
+import org.apache.sqoop.SqoopOptions;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,10 +11,10 @@ import org.junit.rules.ExpectedException;
 
 import java.sql.SQLException;
 
-import static com.cloudera.sqoop.SqoopOptions.FileLayout;
-import static com.cloudera.sqoop.SqoopOptions.FileLayout.SequenceFile;
-import static com.cloudera.sqoop.SqoopOptions.FileLayout.AvroDataFile;
-import static com.cloudera.sqoop.SqoopOptions.FileLayout.ParquetFile;
+import static org.apache.sqoop.SqoopOptions.FileLayout;
+import static org.apache.sqoop.SqoopOptions.FileLayout.SequenceFile;
+import static org.apache.sqoop.SqoopOptions.FileLayout.AvroDataFile;
+import static org.apache.sqoop.SqoopOptions.FileLayout.ParquetFile;
 
 /**
  * Test the Netezza EDW connector for direct mode imports.
@@ -252,4 +251,3 @@ public class TestDirectNetezzaImport extends TestJdbcNetezzaImport {
     runImport(options, null, TABLE_NAME);
   }
 }
-

@@ -19,12 +19,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
-import com.cloudera.sqoop.Sqoop;
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.manager.ConnManager;
-import com.cloudera.sqoop.tool.ImportTool;
-import com.cloudera.sqoop.tool.SqoopTool;
+import org.apache.sqoop.Sqoop;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.manager.ConnManager;
+import org.apache.sqoop.tool.ImportTool;
+import org.apache.sqoop.tool.SqoopTool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,7 +91,7 @@ public class TestJdbcNetezzaImport {
 
     return sqoopOptions;
   }
-  
+
   protected String assembleTableOrViewName(String schema, String tableOrView) {
 
     if (schema != null) {
@@ -523,4 +522,3 @@ public class TestJdbcNetezzaImport {
     }
   }
 }
-

@@ -22,13 +22,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 
-import com.cloudera.sqoop.ConnFactory;
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.manager.ConnManager;
 import com.cloudera.sqoop.manager.EnterpriseManagerFactory;
-import com.cloudera.sqoop.metastore.JobData;
-import com.cloudera.sqoop.tool.ImportTool;
-import com.cloudera.sqoop.util.AsyncSink;
+import org.apache.sqoop.ConnFactory;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.manager.ConnManager;
+import org.apache.sqoop.metastore.JobData;
+import org.apache.sqoop.tool.ImportTool;
+import org.apache.sqoop.util.AsyncSink;
 
 /**
  * Utilities for testing Netezza.
@@ -366,4 +366,3 @@ public class NzTestUtil {
     }
   }
 }
-

@@ -2,6 +2,8 @@
 
 package com.cloudera.sqoop.netezza;
 
+import com.cloudera.sqoop.netezza.util.NetezzaUtil;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,13 +20,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.util.StringUtils;
-
-import com.cloudera.sqoop.io.NamedFifo;
-import com.cloudera.sqoop.manager.MySQLUtils;
-import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
-import com.cloudera.sqoop.netezza.util.NetezzaUtil;
-import com.cloudera.sqoop.config.ConfigurationHelper;
-import com.cloudera.sqoop.util.TaskId;
+import org.apache.sqoop.io.NamedFifo;
+import org.apache.sqoop.manager.MySQLUtils;
+import org.apache.sqoop.mapreduce.db.DBConfiguration;
+import org.apache.sqoop.config.ConfigurationHelper;
+import org.apache.sqoop.util.TaskId;
 
 import static com.cloudera.sqoop.netezza.util.NetezzaConstants.*;
 

@@ -14,15 +14,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.cloudera.sqoop.SqoopOptions;
+import org.apache.sqoop.SqoopOptions;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static com.cloudera.sqoop.SqoopOptions.FileLayout.AvroDataFile;
-import static com.cloudera.sqoop.SqoopOptions.FileLayout.ParquetFile;
-import static com.cloudera.sqoop.SqoopOptions.FileLayout.SequenceFile;
+import static org.apache.sqoop.SqoopOptions.FileLayout.AvroDataFile;
+import static org.apache.sqoop.SqoopOptions.FileLayout.ParquetFile;
+import static org.apache.sqoop.SqoopOptions.FileLayout.SequenceFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 

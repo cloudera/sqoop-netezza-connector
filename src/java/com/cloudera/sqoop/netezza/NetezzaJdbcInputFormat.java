@@ -34,11 +34,10 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.sqoop.mapreduce.DBWritable;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-
-import com.cloudera.sqoop.mapreduce.db.DBConfiguration;
-import com.cloudera.sqoop.mapreduce.db.DBSplitter;
-import com.cloudera.sqoop.mapreduce.db.DataDrivenDBInputFormat;
-import com.cloudera.sqoop.config.ConfigurationHelper;
+import org.apache.sqoop.mapreduce.db.DBConfiguration;
+import org.apache.sqoop.mapreduce.db.DBSplitter;
+import org.apache.sqoop.mapreduce.db.DataDrivenDBInputFormat;
+import org.apache.sqoop.config.ConfigurationHelper;
 
 /**
  * An InputFormat that uses a netezza-specific partitioning strategy
@@ -108,4 +107,3 @@ public class NetezzaJdbcInputFormat<T extends DBWritable>
         null);
   }
 }
-
