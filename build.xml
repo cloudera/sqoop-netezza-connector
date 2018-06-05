@@ -17,7 +17,8 @@
   <property environment="env"/>
   <property name="name" value="sqoop-nz-connector" />
   <property name="Name" value="SqoopConnectors" />
-  <property name="version" value="1.6c5-SNAPSHOT" />
+  <property name="majorVersion" value="1" />
+  <property name="version" value="1.6c6-SNAPSHOT" />
   <property name="artifact.name" value="${name}-${version}" />
   <property name="dest.jar" value="${artifact.name}.jar" />
   <property name="git.hash" value="" />
@@ -252,6 +253,9 @@
         <include name="${artifact.name}/**/*.sh" />
       </tarfileset>
     </tar>
+
+    <checksum file="${build.dir}/${artifact.name}.tar.gz" todir="${build.dir}" algorithm="sha1" forceOverwrite="yes" />
+    <checksum file="${build.dir}/${artifact.name}.tar.gz" todir="${build.dir}" algorithm="md5" forceOverwrite="yes" />
   </target>
 
   <target name="parcel" depends="tar" description="Create parcels">
@@ -310,25 +314,83 @@
           </tarfileset>
         </tar>
 
+
         <!-- Our subsequent parcel repo script require to have separate meta tarball -->
 
         <!-- Clean up -->
         <delete dir="${build.dir}/${parcel.name}-@{distro}-meta" />
 
-        <!-- Generate the metadata tarball content -->
-        <mkdir dir="${build.dir}/${parcel.name}-@{distro}-meta" />
-        <copy todir="${build.dir}/${parcel.name}-@{distro}-meta">
-          <fileset dir="${build.dir}/${parcel.name}/meta/"/>
-        </copy>
 
-        <tar destfile="${build.dir}/${parcel.name}-@{distro}.parcel.meta.tar.gz" compression="gzip">
-          <tarfileset dir="${build.dir}/${parcel.name}-@{distro}-meta" prefix="${parcel.name}-@{distro}-meta">
-            <include name="**/*" />
-          </tarfileset>
-        </tar>
+        <checksum file="${build.dir}/${parcel.name}-@{distro}.parcel" todir="${build.dir}" algorithm="sha1" forceOverwrite="yes" />
+        <!--<exec executable="src/hashFile.sh" output="${build.dir}/${parcel.name}-@{distro}.parcel.sha1">-->
+          <!--<arg value="${build.dir}/${parcel.name}-@{distro}.parcel"/>-->
+        <!--</exec>-->
       </sequential>
     </for>
   </target>
+
+
+  <target name="release" depends="parcel"
+          description="Release artifacts and publish to S3">
+
+    <property name="release.rootFolder" location="${basedir}/build/release" />
+    <property name="release.parcelsFolder" value="${release.rootFolder}/sqoop-netezza-connector${majorVersion}/${version}/parcels" />
+    <property name="release.tarballFolder" value="${release.rootFolder}/sqoop-netezza-connector${majorVersion}/${version}/tarball" />
+
+    <mkdir dir="${release.parcelsFolder}"/>
+
+    <exec outputproperty="buildDate" executable="date" failonerror="true">
+      <arg value="+%Y%m%d-%H%M%S"/>
+    </exec>
+
+    <exec outputproperty="gbn" executable="curl" failonerror="true">
+      <arg value="-f"/>
+      <arg value="--silent"/>
+      <arg value="http://gbn.infra.cloudera.com"/>
+    </exec>
+
+    <exec outputproperty="gitBranch" executable="git" failonerror="true">
+      <arg value="rev-parse"/>
+      <arg value="--abbrev-ref"/>
+      <arg value="HEAD"/>
+    </exec>
+
+    <exec outputproperty="gitRef" executable="git" failonerror="true">
+      <arg value="rev-parse"/>
+      <arg value="HEAD"/>
+    </exec>
+
+    <exec executable="src/generateBuildJson.sh" output="${release.rootFolder}/build.json" failonerror="true">
+      <arg value="${buildDate}"/>
+      <arg value="${gbn}"/>
+      <arg value="${majorVersion}"/>
+      <arg value="${version}"/>
+      <arg value="${gitRef}"/>
+    </exec>
+
+    <copy todir="${release.parcelsFolder}">
+      <fileset dir="${build.dir}">
+        <include name="*.parcel"/>
+        <include name="*.parcel.sha1"/>
+      </fileset>
+    </copy>
+
+    <copy todir="${release.tarballFolder}">
+      <fileset dir="${build.dir}">
+        <include name="*.tar.gz*"/>
+      </fileset>
+    </copy>
+
+    <exec executable="src/generateManifestJson.sh" output="${release.parcelsFolder}/manifest.json" failonerror="true"/>
+
+    <exec executable="src/publishToS3.sh" failonerror="true">
+      <arg value="${release.rootFolder}"/>
+      <arg value="${gbn}"/>
+    </exec>
+
+    <echo message="Release complete" />
+  </target>
+
 
   <!-- set variables that configure the actual test -->
   <target name="test-prep">
@@ -461,12 +523,6 @@
         <fail message="Error: cannot release a snapshot. Set -Dversion" />
       </then>
     </if>
-  </target>
-
-  <target name="release" depends="checkversion,tar"
-      description="Roll a release artifact">
-    <echo message="Release complete" />
-    <echo message="Binary tar: ${tar.file}" />
   </target>
 
   <target name="mvn-prep" depends="init,ivy-resolve-common">
