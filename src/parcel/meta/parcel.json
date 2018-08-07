@@ -16,6 +16,7 @@
 
   "packages": [],
   "components": [],
+  "depends" : "CDH (>= 6.0), CDH (<< 7.0)",
  
   "provides": [
     "sqoop-plugin"
