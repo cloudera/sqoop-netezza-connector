@@ -12,7 +12,7 @@ OS="unknown"
 
 getOs() {
     filename=$1
-    OS=`echo $filename | cut -d'-' -f 4 | cut -d'.' -f 1`;
+    OS=`echo $filename | cut -d'-' -f 3 | cut -d'.' -f 1`;
 }
 
 
