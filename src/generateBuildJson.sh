@@ -5,6 +5,7 @@ GBN=$2
 MAJOR_VERSION=$3
 VERSION=$4
 REF=$5
+EXPIRATION=$6
 
 FIRST=1
 OS="unknown"
@@ -21,6 +22,8 @@ echo "{
   \"product\": \"sqoop-netezza-connector\",
   \"schema_version\": 2,
   \"version\": \"$VERSION\",
+  \"user\": \"$USER\",
+  \"expiration\": \"$EXPIRATION\",
   \"sources\": [
     {
       \"ref\": \"$REF\",

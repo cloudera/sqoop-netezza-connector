@@ -343,6 +343,12 @@
       <arg value="+%Y%m%d-%H%M%S"/>
     </exec>
 
+    <exec outputproperty="expiryDate" executable="date" failonerror="true">
+      <arg value="-d"/>
+      <arg value="+ 30 days"/>
+      <arg value="+%Y%m%d-%H%M"/>
+    </exec>
+
     <exec outputproperty="gbn" executable="curl" failonerror="true">
       <arg value="-f"/>
       <arg value="--silent"/>
@@ -366,6 +372,7 @@
       <arg value="${majorVersion}"/>
       <arg value="${version}"/>
       <arg value="${gitRef}"/>
+      <arg value="${expiryDate}"/>
     </exec>
 
     <copy todir="${release.parcelsFolder}">
