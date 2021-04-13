@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -45,6 +46,9 @@ public class DirectNetezzaManager extends NetezzaManager {
   public static final String NZ_UPLOADDIR_ARG = "nz-uploaddir";
   public static final String NZ_CTRLCHARS_ARG = "nz-ctrlchars";
 
+  public static final String NETEZZA_SCHEMA_OPT = "netezza.schema";
+  public static final String NETEZZA_TABLE_SCHEMA_LONG_ARG = "schema";
+
   // Catalog query for looking up object types
   private static final String QUERY_OBJECTY_TYPE = "SELECT OBJTYPE FROM "
       + "_V_OBJECTS WHERE OBJNAME = ? AND SCHEMA = CURRENT_SCHEMA";
@@ -77,6 +81,8 @@ public class DirectNetezzaManager extends NetezzaManager {
 
     // set netezza specific settings in context's sqoop options.
     String[] extras = options.getExtraArgs();
+    LOG.debug("extraArgs " + Arrays.toString(extras));
+
     try {
       CommandLine parser = getParser(extras);
       if (parser != null) {
@@ -233,6 +239,8 @@ public class DirectNetezzaManager extends NetezzaManager {
 
     // set netezza specific settings in context's sqoop options.
     String[] extras = context.getOptions().getExtraArgs();
+    LOG.debug("extraArgs " + Arrays.toString(extras));
+
     try {
       CommandLine parser = getParser(extras);
       if (parser != null) {
@@ -305,6 +313,10 @@ public class DirectNetezzaManager extends NetezzaManager {
         .withDescription("Pass CTRLCHARS option to nzLoad")
         .withLongOpt(NZ_CTRLCHARS_ARG).create());
 
+    nzOpts.addOption(OptionBuilder.withArgName(NETEZZA_SCHEMA_OPT)
+        .hasArg().withDescription("Allow Schema")
+        .withLongOpt(NETEZZA_TABLE_SCHEMA_LONG_ARG).create());
+
     return nzOpts;
   }
 
@@ -340,6 +352,13 @@ public class DirectNetezzaManager extends NetezzaManager {
     if (in.hasOption(NZ_CTRLCHARS_ARG)) {
       conf.setBoolean(NZ_CTRLCHARS_CONF, true);
     }
+
+    // SCHEMA option
+    if (in.hasOption(NETEZZA_TABLE_SCHEMA_LONG_ARG)) {
+      String schemaName = in.getOptionValue(NETEZZA_TABLE_SCHEMA_LONG_ARG);
+      LOG.info("We will use schema " + schemaName);
+      conf.set(NETEZZA_SCHEMA_OPT, schemaName);
+    }
   }
 
   /**
@@ -367,5 +386,18 @@ public class DirectNetezzaManager extends NetezzaManager {
 
   private void throwIllegalArgumentException(String option) {
     throw new IllegalArgumentException("Unsupported argument with Netezza Connector: " + option);
+  }
+
+  @Override
+  public String escapeTableName(String tableName) {
+    Configuration conf = options.getConf();
+
+    String schema = conf.get(NETEZZA_SCHEMA_OPT);
+    // Return table name including schema if requested
+    if (schema != null && !schema.isEmpty()) {
+      return escapeIdentifier(schema) + "." + escapeIdentifier(tableName);
+    }
+
+    return escapeIdentifier(tableName);
   }
 }

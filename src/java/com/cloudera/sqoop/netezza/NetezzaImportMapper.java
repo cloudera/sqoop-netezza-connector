@@ -133,7 +133,12 @@ public class NetezzaImportMapper
           }
         }
         sb.append(" FROM ");
-        sb.append(dbConf.getInputTableName());
+        String schema = conf.get(DirectNetezzaManager.NETEZZA_SCHEMA_OPT);
+        String tableName = dbConf.getInputTableName();
+        if (schema != null) {
+          tableName = schema + "." + tableName;
+        }
+        sb.append(tableName);
         sb.append(" WHERE MOD(DATASLICEID, " + numMappers);
         sb.append(") = " + sliceId);
 
