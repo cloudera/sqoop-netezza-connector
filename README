@@ -1,7 +1,3 @@
-
-This is the proprietary sqoop-connectors package. It includes extensions that
-allow Sqoop to access additional databases. For example, Netezza.
-
 BUILDING:
 
 You can build this project using ant. This project depends on Sqoop, and on
