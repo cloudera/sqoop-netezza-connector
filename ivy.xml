@@ -46,6 +46,18 @@
   </publications>
   <dependencies>
     <!-- Dependencies for Cloudera's Distribution for Hadoop -->
+    <dependency org="org.apache.hadoop" name="hadoop-common"
+      rev="${hadoop-common.version}" conf="common->default">
+      <artifact name="hadoop-common" type="jar" />
+      <artifact name="hadoop-common" type="jar" m:classifier="tests"/>
+      <exclude org="asm" module="asm" />
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-hdfs"
+      rev="${hadoop-hdfs.version}" conf="common->default">
+      <artifact name="hadoop-hdfs" type="jar" />
+      <artifact name="hadoop-hdfs" type="jar" m:classifier="tests"/>
+      <exclude org="asm" module="asm" />
+    </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core"
       rev="${hadoop-mapreduce-client-core.version}" conf="common->default"/>
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-common"
